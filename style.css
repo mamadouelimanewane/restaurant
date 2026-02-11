@@ -1073,3 +1073,56 @@ td {
         transform: translateY(-5px);
     }
 }
+
+/* Destination Dropdown Fixes */
+.destination-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: -4px;
+    width: calc(100% + 8px);
+    background: white;
+    border: 2px solid var(--booking-yellow);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    display: none;
+    z-index: 10000;
+    /* Ultra high to clear anything */
+    padding: 4px 0;
+}
+
+/* Inspiration Section */
+.inspiration-card {
+    height: 180px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+
+.inspiration-card:hover {
+    transform: scale(1.02);
+}
+
+.inspiration-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: white;
+}
+
+.inspiration-overlay h4 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.inspiration-overlay p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}

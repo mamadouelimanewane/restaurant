@@ -33,9 +33,11 @@ window.filterDestinations = () => {
 };
 
 // Close dropdown when clicking outside
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.destination-wrapper')) {
-        document.getElementById('destinationDropdown').style.display = 'none';
+document.addEventListener('mousedown', (e) => {
+    const dropdown = document.getElementById('destinationDropdown');
+    const wrapper = document.querySelector('.destination-wrapper');
+    if (dropdown && !wrapper.contains(e.target)) {
+        dropdown.style.display = 'none';
     }
 });
 
@@ -706,5 +708,44 @@ function renderPassport() {
     document.getElementById('passportReward').style.display = allUnlocked ? 'block' : 'none';
 }
 
+function renderInspiration() {
+    grid.innerHTML = `
+        <div style="grid-column: 1/-1; margin-top: 1rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Explorez le Sénégal par destination</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div class="inspiration-card" onclick="selectDestination('Dakar')" style="background-image: url('https://images.unsplash.com/photo-1544124499-58912cbddaad?auto=format&fit=crop&q=80&w=600');">
+                    <div class="inspiration-overlay">
+                        <h4>Dakar</h4>
+                        <p>La capitale vibrante</p>
+                    </div>
+                </div>
+                <div class="inspiration-card" onclick="selectDestination('Saly')" style="background-image: url('https://images.unsplash.com/photo-1563200729-067645f7f3bd?auto=format&fit=crop&q=80&w=600');">
+                    <div class="inspiration-overlay">
+                        <h4>Saly / Mbour</h4>
+                        <p>La Petite Côte ensoleillée</p>
+                    </div>
+                </div>
+                <div class="inspiration-card" onclick="selectDestination('Saint-Louis')" style="background-image: url('https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=600');">
+                    <div class="inspiration-overlay">
+                        <h4>Saint-Louis</h4>
+                        <p>L'élégance coloniale</p>
+                    </div>
+                </div>
+                <div class="inspiration-card" onclick="selectDestination('Cap Skirring')" style="background-image: url('https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=600');">
+                    <div class="inspiration-overlay">
+                        <h4>Cap Skirring</h4>
+                        <p>Le paradis de Casamance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    resultsCount.innerText = "Découvrez nos destinations phares";
+}
+
 // Init
-renderRestaurants(restaurants);
+if (restaurants && restaurants.length > 0) {
+    renderRestaurants(restaurants);
+} else {
+    renderInspiration();
+}
