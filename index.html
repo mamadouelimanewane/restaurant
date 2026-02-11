@@ -39,14 +39,15 @@
         <div class="search-bar">
             <div class="search-box destination-wrapper">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Où allez-vous ?" onfocus="showDestinations()"
-                    onkeyup="filterDestinations()">
+                <input type="text" id="searchInput" placeholder="Où allez-vous ?" onfocus="showDestinations(event)"
+                    onclick="showDestinations(event)" onkeyup="filterDestinations()">
                 <div id="destinationDropdown" class="destination-dropdown">
                     <div class="dropdown-item" onclick="selectDestination('Dakar')">📍 <strong>Dakar</strong>, Sénégal
                     </div>
                     <div class="dropdown-item" onclick="selectDestination('Saly')">📍 <strong>Saly</strong>, Mbour</div>
                     <div class="dropdown-item" onclick="selectDestination('Saint-Louis')">📍
-                        <strong>Saint-Louis</strong>, Sénégal</div>
+                        <strong>Saint-Louis</strong>, Sénégal
+                    </div>
                     <div class="dropdown-item" onclick="selectDestination('Cap Skirring')">📍 <strong>Cap
                             Skirring</strong>, Casamance</div>
                 </div>

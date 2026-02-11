@@ -13,8 +13,13 @@ let bookings = JSON.parse(localStorage.getItem('teranga_bookings')) || [];
 let passport = JSON.parse(localStorage.getItem('teranga_passport')) || {};
 
 // Search Dropdown Functions
-window.showDestinations = () => {
-    document.getElementById('destinationDropdown').style.display = 'block';
+window.showDestinations = (e) => {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById('destinationDropdown');
+    if (dropdown) {
+        dropdown.style.setProperty('display', 'block', 'important');
+        console.log("Dropdown visibility forced to block");
+    }
 };
 
 window.selectDestination = (city) => {
@@ -711,47 +716,71 @@ function renderPassport() {
 }
 
 function renderInspiration() {
+    console.log("Rendering inspiration section...");
     grid.innerHTML = `
-        <div style="grid-column: 1/-1; margin-top: 1rem;">
-            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Explorez le Sénégal par destination</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem;">
+        <div style="grid-column: 1/-1; margin-top: 2rem; width: 100%;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #1a1a1a;">Explorez le Sénégal par destination</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; width: 100%;">
                 <div class="inspiration-card" onclick="selectDestination('Dakar')" style="background-image: url('https://images.unsplash.com/photo-1544124499-58912cbddaad?auto=format&fit=crop&q=80&w=600');">
                     <div class="inspiration-overlay">
                         <h4>Dakar</h4>
-                        <p>La capitale vibrante</p>
+                        <p>Plages et vie nocturne</p>
                     </div>
                 </div>
                 <div class="inspiration-card" onclick="selectDestination('Saly')" style="background-image: url('https://images.unsplash.com/photo-1563200729-067645f7f3bd?auto=format&fit=crop&q=80&w=600');">
                     <div class="inspiration-overlay">
                         <h4>Saly / Mbour</h4>
-                        <p>La Petite Côte ensoleillée</p>
+                        <p>Station balnéaire</p>
                     </div>
                 </div>
                 <div class="inspiration-card" onclick="selectDestination('Saint-Louis')" style="background-image: url('https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=600');">
                     <div class="inspiration-overlay">
                         <h4>Saint-Louis</h4>
-                        <p>L'élégance coloniale</p>
+                        <p>Culture et histoire</p>
                     </div>
                 </div>
                 <div class="inspiration-card" onclick="selectDestination('Cap Skirring')" style="background-image: url('https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=600');">
                     <div class="inspiration-overlay">
                         <h4>Cap Skirring</h4>
-                        <p>Le paradis de Casamance</p>
+                        <p>Détente absolue</p>
                     </div>
                 </div>
             </div>
+            
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-top: 3rem; margin-bottom: 1.5rem; color: #1a1a1a;">Nos coups de cœur du moment</h3>
+            <div id="featuredRestaurantsGrid" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                <!-- Fallback to showing all restaurants if the above grid is empty -->
+            </div>
         </div>
     `;
-    resultsCount.innerText = "Découvrez nos destinations phares";
+
+    // Also render all restaurants below inspiration to ensure page is NOT empty
+    const listingGrid = document.getElementById('featuredRestaurantsGrid');
+    if (listingGrid && restaurants) {
+        listingGrid.innerHTML = restaurants.map(resto => {
+            const ratingText = getRatingText(resto.rating);
+            return `
+            <div class="booking-card" style="margin-bottom: 1rem;">
+                <div class="booking-card-img-container"><img src="${resto.image}" class="booking-card-img"></div>
+                <div class="booking-card-content">
+                    <div class="card-details">
+                        <h3>${resto.name}</h3>
+                        <div class="card-location">${resto.city}</div>
+                        <div class="card-cuisine">${resto.cuisine}</div>
+                    </div>
+                    <div class="card-right-panel">
+                        <div class="rating-container"><div class="rating-text">${ratingText}</div><div class="rating-score">${resto.rating}</div></div>
+                        <button class="see-availability" onclick="openBooking(${resto.id})">Voir les dispos</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+    resultsCount.innerText = "Bienvenue sur TerangaReserve.sn";
 }
 
 // Ensure data is ready then init
 document.addEventListener('DOMContentLoaded', () => {
-    // We use window.restaurantsData which comes from data.js
-    const initialData = window.restaurantsData || restaurants;
-    if (initialData && initialData.length > 0) {
-        renderRestaurants(initialData);
-    } else {
-        renderInspiration();
-    }
+    console.log("DOM Loaded, starting init...");
+    renderInspiration(); // Always show inspiration on home load
 });
