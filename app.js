@@ -36,8 +36,10 @@ window.filterDestinations = () => {
 document.addEventListener('mousedown', (e) => {
     const dropdown = document.getElementById('destinationDropdown');
     const wrapper = document.querySelector('.destination-wrapper');
-    if (dropdown && !wrapper.contains(e.target)) {
-        dropdown.style.display = 'none';
+    if (dropdown && dropdown.style.display === 'block') {
+        if (!wrapper.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
     }
 });
 
@@ -712,7 +714,7 @@ function renderInspiration() {
     grid.innerHTML = `
         <div style="grid-column: 1/-1; margin-top: 1rem;">
             <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Explorez le Sénégal par destination</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem;">
                 <div class="inspiration-card" onclick="selectDestination('Dakar')" style="background-image: url('https://images.unsplash.com/photo-1544124499-58912cbddaad?auto=format&fit=crop&q=80&w=600');">
                     <div class="inspiration-overlay">
                         <h4>Dakar</h4>
@@ -743,9 +745,13 @@ function renderInspiration() {
     resultsCount.innerText = "Découvrez nos destinations phares";
 }
 
-// Init
-if (restaurants && restaurants.length > 0) {
-    renderRestaurants(restaurants);
-} else {
-    renderInspiration();
-}
+// Ensure data is ready then init
+document.addEventListener('DOMContentLoaded', () => {
+    // We use window.restaurantsData which comes from data.js
+    const initialData = window.restaurantsData || restaurants;
+    if (initialData && initialData.length > 0) {
+        renderRestaurants(initialData);
+    } else {
+        renderInspiration();
+    }
+});
