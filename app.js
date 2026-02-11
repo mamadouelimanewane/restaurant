@@ -10,7 +10,34 @@ let currentBookingData = null; // Temp storage before payment
 
 // State management
 let bookings = JSON.parse(localStorage.getItem('teranga_bookings')) || [];
-let passport = JSON.parse(localStorage.getItem('teranga_passport')) || {}; // Format: { "Dakar": "11/02/2026", ... }
+let passport = JSON.parse(localStorage.getItem('teranga_passport')) || {};
+
+// Search Dropdown Functions
+window.showDestinations = () => {
+    document.getElementById('destinationDropdown').style.display = 'block';
+};
+
+window.selectDestination = (city) => {
+    document.getElementById('searchInput').value = city;
+    document.getElementById('destinationDropdown').style.display = 'none';
+    filterRestaurants();
+};
+
+window.filterDestinations = () => {
+    const val = document.getElementById('searchInput').value.toLowerCase();
+    const items = document.querySelectorAll('.dropdown-item');
+    items.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(val) ? 'flex' : 'none';
+    });
+};
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.destination-wrapper')) {
+        document.getElementById('destinationDropdown').style.display = 'none';
+    }
+});
 
 // Hidden Admin Trigger: Press 'A' + 'D' + 'M' (simplified for demo: triple click on footer logo or a specific key)
 window.addEventListener('keydown', (e) => {

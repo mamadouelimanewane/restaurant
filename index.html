@@ -37,13 +37,26 @@
 
     <div class="container">
         <div class="search-bar">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Où allez-vous ?" onkeyup="filterRestaurants()">
+            <div class="search-box destination-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Où allez-vous ?" onfocus="showDestinations()"
+                    onkeyup="filterDestinations()">
+                <div id="destinationDropdown" class="destination-dropdown">
+                    <div class="dropdown-item" onclick="selectDestination('Dakar')">📍 <strong>Dakar</strong>, Sénégal
+                    </div>
+                    <div class="dropdown-item" onclick="selectDestination('Saly')">📍 <strong>Saly</strong>, Mbour</div>
+                    <div class="dropdown-item" onclick="selectDestination('Saint-Louis')">📍
+                        <strong>Saint-Louis</strong>, Sénégal</div>
+                    <div class="dropdown-item" onclick="selectDestination('Cap Skirring')">📍 <strong>Cap
+                            Skirring</strong>, Casamance</div>
+                </div>
             </div>
             <div class="search-box">
+                <span class="search-icon">📅</span>
                 <input type="date" id="searchDate">
             </div>
             <div class="search-box">
+                <span class="search-icon">⏰</span>
                 <select id="searchTime">
                     <option>19:00</option>
                     <option>20:00</option>
@@ -51,6 +64,7 @@
                 </select>
             </div>
             <div class="search-box">
+                <span class="search-icon">👤</span>
                 <input type="number" id="searchPax" value="2" min="1">
             </div>
             <button class="search-trigger" onclick="filterRestaurants()">Rechercher</button>
