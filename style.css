@@ -145,18 +145,20 @@ header.hero {
     background: transparent;
 }
 
-/* Destination Dropdown */
+/* Destination Dropdown (Consolidated) */
 .destination-dropdown {
     position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    width: 100%;
+    top: calc(100% + 5px);
+    left: -4px;
+    width: calc(100% + 8px);
     background: white;
-    border-radius: 4px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border: 2px solid var(--booking-yellow);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     display: none;
-    z-index: 1000;
-    padding: 8px 0;
+    z-index: 10000;
+    padding: 4px 0;
 }
 
 .dropdown-item {
@@ -1074,22 +1076,6 @@ td {
     }
 }
 
-/* Destination Dropdown Fixes */
-.destination-dropdown {
-    position: absolute;
-    top: calc(100% + 5px);
-    left: -4px;
-    width: calc(100% + 8px);
-    background: white;
-    border: 2px solid var(--booking-yellow);
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    display: none;
-    z-index: 10000;
-    /* Ultra high to clear anything */
-    padding: 4px 0;
-}
 
 /* Inspiration Section */
 .inspiration-card {

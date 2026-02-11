@@ -110,17 +110,22 @@ function getRatingText(rating) {
 }
 
 function renderRestaurants(items) {
-    const mainGrid = document.getElementById('restaurantGrid');
+    const listingGrid = document.getElementById('dynamicListingGrid');
     const countLabel = document.getElementById('resultsCount');
-    if (!mainGrid) return;
-
-    if (countLabel) countLabel.innerText = `${items.length} établissements trouvés`;
-
-    if (!items.length) {
-        mainGrid.innerHTML = '<p style="padding: 2rem; text-align: center; width: 100%;">Aucun résultat ne correspond à vos critères.</p>';
+    if (!listingGrid) {
+        console.warn("Teranga: dynamicListingGrid not found in DOM.");
         return;
     }
-    mainGrid.innerHTML = items.map(resto => {
+
+    if (countLabel) {
+        countLabel.innerText = items.length > 0 ? `${items.length} établissements trouvés` : "Aucun établissement trouvé";
+    }
+
+    if (!items.length) {
+        listingGrid.innerHTML = '<p style="padding: 2rem; text-align: center; width: 100%;">Aucun résultat ne correspond à vos critères. Essayez une autre ville ou destination.</p>';
+        return;
+    }
+    listingGrid.innerHTML = items.map(resto => {
         const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${resto.lat},${resto.lng}`;
         const ratingText = getRatingText(resto.rating);
         return `
@@ -745,39 +750,10 @@ function renderPassport() {
 }
 
 function initTeranga() {
-    console.log("Teranga: Initializing Listing...");
+    console.log("Teranga: Initializing plateforme...");
     try {
         const data = window.restaurantsData || [];
-        const listingGrid = document.getElementById('dynamicListingGrid');
-        const countLabel = document.getElementById('resultsCount');
-
-        if (!listingGrid) {
-            console.warn("Teranga: dynamicListingGrid not found yet.");
-            return;
-        }
-
-        if (data.length > 0) {
-            listingGrid.innerHTML = data.map(resto => {
-                const ratingText = getRatingText(resto.rating);
-                return `
-                <div class="booking-card">
-                    <div class="booking-card-img-container"><img src="${resto.image}" class="booking-card-img" onerror="this.src='https://via.placeholder.com/300?text=Resto'"></div>
-                    <div class="booking-card-content">
-                        <div class="card-details">
-                            <h3 style="color:#006ce4;">${resto.name}</h3>
-                            <div class="card-location" style="font-size:0.9rem;">${resto.city}, Sénégal • <span style="color:#008009;">✅ Dispo</span></div>
-                            <div class="card-cuisine">${resto.cuisine}</div>
-                            <div style="color: #008009; font-weight:700; font-size:0.85rem; margin-top:8px;">L'un de nos meilleurs choix à ${resto.city}</div>
-                        </div>
-                        <div class="card-right-panel">
-                            <div class="rating-container"><div class="rating-text">${ratingText}</div><div class="rating-score">${resto.rating}</div></div>
-                            <button class="see-availability" onclick="openBooking(${resto.id})">Voir les disponibilités</button>
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
-            if (countLabel) countLabel.innerText = "Bienvenue sur TerangaReserve - Découvrez nos établissements";
-        }
+        renderRestaurants(data);
     } catch (err) {
         console.error("Teranga: Error during init:", err);
     }
