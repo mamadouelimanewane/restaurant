@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Gastronomique du Sénégal | TerangaReserve</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <style>
+        :root {
+            --primary: #febb02;
+            --booking-blue: #003580;
+            --booking-blue-light: #006ce4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        /* Header */
+        .map-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--booking-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1001;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .header-btn:hover {
+            background: white;
+            color: var(--booking-blue);
+        }
+
+        /* Main Layout */
+        .map-container {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .map-sidebar {
+            width: 380px;
+            background: white;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-section h3 {
+            color: var(--booking-blue);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .city-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .city-chip {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .city-chip.active {
+            background: var(--booking-blue);
+            color: white;
+            border-color: var(--booking-blue);
+        }
+
+        .resto-list-item {
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .resto-list-item:hover {
+            background: #f0f7ff;
+            border-color: var(--booking-blue-light);
+        }
+
+        .resto-list-item.selected {
+            background: #e3f2fd;
+            border-color: var(--booking-blue);
+        }
+
+        .resto-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .resto-item-name {
+            font-weight: 700;
+            color: var(--booking-blue);
+            font-size: 1rem;
+        }
+
+        .resto-item-rating {
+            background: var(--booking-blue);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .resto-item-city {
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .itinerary-panel {
+            background: #fff8e1;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .itinerary-list {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .itinerary-item {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .itinerary-remove {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--booking-blue-light);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: var(--booking-blue);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.secondary {
+            background: #666;
+        }
+
+        /* Map */
+        #map {
+            flex: 1;
+            height: 100%;
+        }
+
+        .custom-marker {
+            background: var(--booking-blue);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border: 3px solid white;
+            white-space: nowrap;
+        }
+
+        .custom-marker.selected {
+            background: var(--primary);
+            color: #000;
+            transform: scale(1.2);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            display: flex;
+            gap: 2rem;
+            z-index: 1000;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--booking-blue);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* Route Info Box */
+        .route-info {
+            position: absolute;
+            top: 90px;
+            right: 20px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            min-width: 280px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .route-info.active {
+            display: block;
+        }
+
+        .route-info h4 {
+            color: var(--booking-blue);
+            margin-bottom: 1rem;
+        }
+
+        .route-step {
+            padding: 0.75rem;
+            background: #f9f9f9;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="map-header">
+        <div class="header-logo">🗺️ Carte Gastronomique</div>
+        <div class="header-actions">
+            <a href="index.html" class="header-btn">← Retour</a>
+            <button class="header-btn" onclick="exportItinerary()">📥 Exporter</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="map-container">
+        <!-- Sidebar -->
+        <div class="map-sidebar">
+            <div class="sidebar-section">
+                <h3>🌍 Filtrer par destination</h3>
+                <div class="city-filter">
+                    <div class="city-chip active" data-city="all">Tout le Sénégal</div>
+                    <div class="city-chip" data-city="Dakar">Dakar</div>
+                    <div class="city-chip" data-city="Saly">Saly/Mbour</div>
+                    <div class="city-chip" data-city="Saint-Louis">Saint-Louis</div>
+                    <div class="city-chip" data-city="Cap Skirring">Cap Skirring</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>📍 Restaurants (<span id="restoCount">0</span>)</h3>
+                <div id="restoList"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="itinerary-panel">
+                    <h3>🚗 Mon Itinéraire (<span id="itineraryCount">0</span>)</h3>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">
+                        Cliquez sur les restaurants pour créer votre circuit gastronomique
+                    </p>
+                    <ol class="itinerary-list" id="itineraryList"></ol>
+                    <button class="action-btn" onclick="calculateRoute()">📊 Calculer l'Itinéraire</button>
+                    <button class="action-btn secondary" onclick="clearItinerary()">🗑️ Effacer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div id="map"></div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="totalRestos">0</div>
+                <div class="stat-label">Restaurants</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalCities">0</div>
+                <div class="stat-label">Destinations</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalDistance">0 km</div>
+                <div class="stat-label">Circuit Total</div>
+            </div>
+        </div>
+
+        <!-- Route Info Box -->
+        <div class="route-info" id="routeInfo">
+            <h4>📍 Détails de l'Itinéraire</h4>
+            <div id="routeSteps"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script type="module" src="carte.js"></script>
+</body>
+
+</html>
