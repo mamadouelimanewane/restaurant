@@ -61,31 +61,52 @@ window.toggleMapView = () => {
     }
 };
 
+function getRatingText(rating) {
+    if (rating >= 4.7) return "Exceptionnel";
+    if (rating >= 4.5) return "Superbe";
+    if (rating >= 4.0) return "Très bien";
+    return "Bien";
+}
+
 function renderRestaurants(items) {
-    resultsCount.innerText = `${items.length} établissements au Sénégal`;
+    resultsCount.innerText = `${items.length} établissements trouvés`;
     if (!items.length) {
-        grid.innerHTML = '<p style="padding: 2rem; text-align: center; width: 100%;">Aucun résultat.</p>';
+        grid.innerHTML = '<p style="padding: 2rem; text-align: center; width: 100%;">Aucun résultat ne correspond à vos critères.</p>';
         return;
     }
     grid.innerHTML = items.map(resto => {
         const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${resto.lat},${resto.lng}`;
+        const ratingText = getRatingText(resto.rating);
         return `
-        <div class="booking-card animate-in">
-            <img src="${resto.image}" class="booking-card-img">
+        <div class="booking-card">
+            <div class="booking-card-img-container">
+                <img src="${resto.image}" class="booking-card-img">
+            </div>
             <div class="booking-card-content">
-                <div class="card-top">
-                    <div class="card-main-info">
-                        <h3>${resto.name}</h3>
-                        <p style="font-size: 0.85rem; color: var(--booking-blue-light);">${resto.district}, ${resto.city} • <a href="${mapsUrl}" target="_blank" style="text-decoration: none;">📍 Itinéraire</a></p>
-                        <p style="font-size: 0.9rem; margin-top: 8px;">${resto.cuisine} • ${resto.priceRange}</p>
-                        ${resto.promo ? `<div class="promo-badge">🎁 ${resto.promo}</div>` : ''}
-                        ${resto.event ? `<div class="event-badge">🎸 ${resto.event}</div>` : ''}
+                <div class="card-details">
+                    <h3>${resto.name}</h3>
+                    <div class="card-location">
+                        ${resto.district}, ${resto.city} • <a href="${mapsUrl}" target="_blank">📍 Voir sur la carte</a>
                     </div>
-                    <span class="rating-score">${resto.rating}</span>
+                    <div class="card-cuisine">${resto.cuisine} • ${resto.priceRange}</div>
+                    
+                    ${resto.promo ? `<div class="card-features" style="color: #008009;">✅ ${resto.promo}</div>` : ''}
+                    ${resto.event ? `<div class="card-features" style="color: var(--event-purple);">✨ ${resto.event}</div>` : ''}
+                    
+                    <div class="card-features" style="margin-top: 10px;">
+                        ${resto.features.slice(0, 3).map(f => `<span>• ${f} </span>`).join('')}
+                    </div>
+
+                    <div class="card-pricing" style="font-size: 0.8rem; color: #d4111e; font-weight: 700;">
+                        Acompte: ${(resto.avgPrice * 0.2).toLocaleString()} FCFA / convive
+                    </div>
                 </div>
-                <div class="card-actions">
-                    <p style="font-size: 0.9rem; font-weight: bold; color: #d4111e;">Acompte (20%): ${(resto.avgPrice * 0.2).toLocaleString()} FCFA / pers.</p>
-                    <button class="see-availability" onclick="openBooking(${resto.id})">Réserver</button>
+                <div class="card-right-panel">
+                    <div class="rating-container">
+                        <div class="rating-text">${ratingText}</div>
+                        <div class="rating-score">${resto.rating}</div>
+                    </div>
+                    <button class="see-availability" onclick="openBooking(${resto.id})">Voir les disponibilités</button>
                 </div>
             </div>
         </div>`;
@@ -94,13 +115,20 @@ function renderRestaurants(items) {
 
 window.filterRestaurants = () => {
     const term = document.getElementById('searchInput').value.toLowerCase();
-    const locs = Array.from(document.querySelectorAll('.filter-group:nth-child(2) input:checked')).map(el => el.value);
-    const cuis = Array.from(document.querySelectorAll('.filter-group:nth-child(3) input:checked')).map(el => el.value);
+
+    // Improved robust selection for checkboxes
+    const locsChecked = Array.from(document.querySelectorAll('.filters-sidebar input[type="checkbox"]'))
+        .filter(el => el.checked && ["Dakar", "Saly", "Saint-Louis", "Cap Skirring"].includes(el.value))
+        .map(el => el.value);
+
+    const cuisChecked = Array.from(document.querySelectorAll('.filters-sidebar input[type="checkbox"]'))
+        .filter(el => el.checked && !["Dakar", "Saly", "Saint-Louis", "Cap Skirring"].includes(el.value))
+        .map(el => el.value);
 
     const filtered = restaurants.filter(r => {
         const matchesTerm = r.name.toLowerCase().includes(term) || r.city.toLowerCase().includes(term);
-        const matchesLoc = !locs.length || locs.some(l => r.city.includes(l));
-        const matchesCui = !cuis.length || cuis.some(c => r.cuisine.includes(c));
+        const matchesLoc = !locsChecked.length || locsChecked.some(l => r.city.includes(l));
+        const matchesCui = !cuisChecked.length || cuisChecked.some(c => r.cuisine.includes(c));
         return matchesTerm && matchesLoc && matchesCui;
     });
     renderRestaurants(filtered);
@@ -380,7 +408,7 @@ window.generatePDF = () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const booking = bookings[bookings.length - 1]; // Get latest booking
-    const resto = restaurants.find(r => r.name === booking.resto);
+    const pdfResto = restaurants.find(r => r.name === booking.resto);
 
     // --- Design Elements ---
     doc.setFillColor(0, 53, 128); // Teranga Reserve Blue
@@ -402,7 +430,7 @@ window.generatePDF = () => {
     doc.setFontSize(16);
     doc.text(`Établissement: ${booking.resto}`, 20, 85);
     doc.setFontSize(11);
-    doc.text(`${resto.district}, ${resto.city}`, 20, 92);
+    doc.text(`${pdfResto.district}, ${pdfResto.city}`, 20, 92);
 
     // Reservation info
     doc.setDrawColor(238, 238, 238);
@@ -436,12 +464,12 @@ window.generatePDF = () => {
     doc.text('--- TerangaReserve.sn - Le luxe de la réservation ---', 105, 280, { align: 'center' });
 
     // Award Passport Stamp
-    const resto = currentBookingData.restaurant;
-    if (resto && resto.city) {
-        if (!passport[resto.city]) {
-            passport[resto.city] = new Date().toLocaleDateString('fr-FR');
+    const stampResto = currentBookingData.restaurant;
+    if (stampResto && stampResto.city) {
+        if (!passport[stampResto.city]) {
+            passport[stampResto.city] = new Date().toLocaleDateString('fr-FR');
             localStorage.setItem('teranga_passport', JSON.stringify(passport));
-            console.log(`Stamp awarded for ${resto.city}`);
+            console.log(`Stamp awarded for ${stampResto.city}`);
         }
     }
 

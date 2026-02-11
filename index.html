@@ -21,88 +21,83 @@
 
 <body>
     <header class="hero">
-        <div class="glass-header">
-            <nav class="container nav-bar">
-                <div class="logo">TERANGA<span>RESERVE</span></div>
-                <div class="nav-links">
-                    <button class="passport-btn" onclick="openPassport()">🛂 Mon Passeport</button>
-                    <button class="owner-btn" onclick="toggleOwnerDashboard()">Espace Restaurateur</button>
-                    <button class="nav-btn-map" onclick="toggleMapView()">Voir la Carte</button>
-                </div>
-            </nav>
-            <div class="container hero-content">
-                <h1>L'Excellence Gastronomique au Sénégal</h1>
-                <p>Réservez les meilleures tables de Dakar, Saly et Saint-Louis en un clic.</p>
+        <div class="container nav-bar">
+            <div class="logo">TerangaReserve.sn</div>
+            <div class="nav-links">
+                <button onclick="openPassport()">🛂 Mon Passeport</button>
+                <button onclick="toggleOwnerDashboard()">Espace Restaurateur</button>
+                <button onclick="toggleMapView()">Carte</button>
             </div>
-            <div class="container search-bar">
-                <div class="search-box">
-                    <label>Ville / Restaurant</label>
-                    <input type="text" id="searchInput" placeholder="Où souhaitez-vous dîner ?"
-                        onkeyup="filterRestaurants()">
-                </div>
-                <div class="search-box">
-                    <label>Date</label>
-                    <input type="date" id="searchDate">
-                </div>
-                <div class="search-box">
-                    <label>Heure</label>
-                    <select id="searchTime">
-                        <option>19:00</option>
-                        <option>20:00</option>
-                        <option>21:00</option>
-                    </select>
-                </div>
-                <div class="search-box">
-                    <label>Personnes</label>
-                    <input type="number" id="searchPax" value="2" min="1">
-                </div>
-                <button class="search-trigger" onclick="filterRestaurants()">Rechercher</button>
-            </div>
+        </div>
+        <div class="container hero-content">
+            <h1>Trouvez votre prochain restaurant</h1>
+            <p>De Dakar à Saint-Louis, réservez la table idéale au meilleur prix.</p>
         </div>
     </header>
 
+    <div class="container">
+        <div class="search-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Où allez-vous ?" onkeyup="filterRestaurants()">
+            </div>
+            <div class="search-box">
+                <input type="date" id="searchDate">
+            </div>
+            <div class="search-box">
+                <select id="searchTime">
+                    <option>19:00</option>
+                    <option>20:00</option>
+                    <option>21:00</option>
+                </select>
+            </div>
+            <div class="search-box">
+                <input type="number" id="searchPax" value="2" min="1">
+            </div>
+            <button class="search-trigger" onclick="filterRestaurants()">Rechercher</button>
+        </div>
+    </div>
+
     <main class="container main-layout">
-        <!-- Teranga Concierge: Mood-Based Search -->
-        <section class="concierge-section">
-            <div class="concierge-card">
+        <aside class="filters-sidebar">
+            <div class="filter-card">
+                <div class="filter-header">Filtrer par :</div>
+                <div class="filter-body">
+                    <div class="filter-group">
+                        <h4>Ville</h4>
+                        <label><input type="checkbox" value="Dakar" onchange="filterRestaurants()"> Dakar</label>
+                        <label><input type="checkbox" value="Saly" onchange="filterRestaurants()"> Saly</label>
+                        <label><input type="checkbox" value="Saint-Louis" onchange="filterRestaurants()">
+                            Saint-Louis</label>
+                        <label><input type="checkbox" value="Cap Skirring" onchange="filterRestaurants()"> Cap
+                            Skirring</label>
+                    </div>
+                    <div class="filter-group">
+                        <h4>Type de cuisine</h4>
+                        <label><input type="checkbox" value="Africaine" onchange="filterRestaurants()">
+                            Africaine</label>
+                        <label><input type="checkbox" value="Fruits de Mer" onchange="filterRestaurants()"> Fruits de
+                            Mer</label>
+                        <label><input type="checkbox" value="Gastronomique" onchange="filterRestaurants()"> Chic</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teranga Concierge moved to sidebar or prominent spot for better UX -->
+            <div class="concierge-card" style="margin-top: 1rem;">
                 <div class="concierge-header">
                     <span class="magic-icon">✨</span>
                     <div class="concierge-info">
-                        <h3>Concierge Intelligent Teranga</h3>
-                        <p>Dites-moi ce que vous recherchez au-delà des filtres...</p>
+                        <h3>Concierge IA</h3>
+                        <p>Dites-moi votre envie...</p>
                     </div>
                 </div>
                 <div class="concierge-input-wrapper">
-                    <input type="text" id="conciergeInput"
-                        placeholder="Ex: Un dîner romantique avec vue mer à Saint-Louis..."
+                    <input type="text" id="conciergeInput" placeholder="Ex: Dîner romantique..."
                         onkeyup="if(event.key==='Enter') runConcierge()">
-                    <button class="concierge-btn" onclick="runConcierge()">Inspirer moi</button>
                 </div>
+                <button class="concierge-btn" onclick="runConcierge()" style="width: 100%; margin-top: 10px;">Inspirer
+                    moi</button>
                 <div id="conciergeResults" class="concierge-suggestions" style="display: none;"></div>
-            </div>
-        </section>
-
-        <aside class="filters-sidebar">
-            <h3>Filtrer par</h3>
-            <div class="filter-group">
-                <h4>Destination</h4>
-                <label><input type="checkbox" value="Dakar" onchange="filterRestaurants()"> Dakar</label>
-                <label><input type="checkbox" value="Saly" onchange="filterRestaurants()"> Saly / Mbour</label>
-                <label><input type="checkbox" value="Saint-Louis" onchange="filterRestaurants()"> Saint-Louis</label>
-                <label><input type="checkbox" value="Cap Skirring" onchange="filterRestaurants()"> Cap Skirring</label>
-            </div>
-            <div class="filter-group">
-                <h4>Cuisine</h4>
-                <label><input type="checkbox" value="Africaine" onchange="filterRestaurants()"> Africaine</label>
-                <label><input type="checkbox" value="Fruits de Mer" onchange="filterRestaurants()"> Fruits de
-                    Mer</label>
-                <label><input type="checkbox" value="Gastronomique" onchange="filterRestaurants()"> Chic</label>
-            </div>
-            <div class="filter-group">
-                <h4>Budget</h4>
-                <label><input type="checkbox" value="€€" onchange="filterRestaurants()"> Économique</label>
-                <label><input type="checkbox" value="€€€" onchange="filterRestaurants()"> Intermédiaire</label>
-                <label><input type="checkbox" value="€€€€" onchange="filterRestaurants()"> Luxe</label>
             </div>
         </aside>
 
@@ -111,23 +106,20 @@
                 <div id="map"></div>
             </div>
             <div class="results-header">
-                <h2 id="resultsCount">Chargement...</h2>
-                <select onchange="sortResults(this.value)">
-                    <option value="rating">Mieux notés</option>
-                    <option value="price-low">Prix croissant</option>
-                    <option value="price-high">Prix décroissant</option>
-                </select>
+                <h2 id="resultsCount">Sélection des meilleurs établissements</h2>
             </div>
             <div class="restaurant-list" id="restaurantGrid"></div>
         </section>
     </main>
 
-    <footer class="footer">
-        <div class="container" style="text-align: center; padding: 2rem 0;">
-            <p>&copy; 2024 TerangaReserve. Tous droits réservés.</p>
-            <div class="footer-links" style="margin-top: 1rem;">
-                <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.8rem; opacity: 0.7;"
-                    onclick="toggleAdminPortal(); return false;">🔐 Accès Propriétaire / Backoffice Master</a>
+    <footer class="footer" style="background: var(--booking-blue); color: white; margin-top: 4rem;">
+        <div class="container" style="text-align: center; padding: 3rem 0;">
+            <p>&copy; 2024 TerangaReserve.sn. Tous droits réservés.</p>
+            <div class="footer-links" style="margin-top: 1rem; display: flex; justify-content: center; gap: 20px;">
+                <a href="#" style="color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.8;"
+                    onclick="toggleAdminPortal(); return false;">🔐 Accès Propriétaire</a>
+                <a href="#" style="color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.8;"
+                    onclick="toggleOwnerDashboard(); return false;">👨‍🍳 Espace Restaurateur</a>
             </div>
         </div>
     </footer>
