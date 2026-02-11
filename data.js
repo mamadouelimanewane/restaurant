@@ -1,4 +1,4 @@
-var restaurants = [
+export const restaurants = [
     {
         id: 1,
         name: "Le Lagon 1",
@@ -208,4 +208,3 @@ var restaurants = [
     }
 ];
 
-window.restaurantsData = restaurants;

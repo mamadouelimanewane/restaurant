@@ -1,0 +1,32 @@
+{
+  "name": "dakar-booking",
+  "version": "1.0.0",
+  "description": "Cette application a été conçue après une analyse approfondie des 8 meilleurs logiciels de réservation du marché (Zenchef, CoverManager, TheFork, Gloria Food, Google Reserve, TripAdvisor, EatApp, Overfull).",
+  "main": "app.js",
+  "scripts": {
+    "dev": "vite",
+    "start": "node server.js",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mamadouelimanewane/restaurant.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mamadouelimanewane/restaurant/issues"
+  },
+  "homepage": "https://github.com/mamadouelimanewane/restaurant#readme",
+  "devDependencies": {
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "express": "^5.2.1",
+    "jspdf": "^4.1.0",
+    "leaflet": "^1.9.4"
+  }
+}

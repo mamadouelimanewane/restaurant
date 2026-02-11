@@ -689,6 +689,10 @@ header.hero {
     display: none;
 }
 
+.tab-content.active {
+    display: block;
+}
+
 /* Menu Item Images */
 .menu-item {
     display: flex;
@@ -1111,4 +1115,122 @@ td {
 .inspiration-overlay p {
     font-size: 0.9rem;
     opacity: 0.9;
+}
+
+/* Concierge IA Styles */
+.concierge-card {
+    background: linear-gradient(135deg, #003580 0%, #0071c2 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: white;
+    box-shadow: 0 8px 24px rgba(0, 53, 128, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.concierge-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.magic-icon {
+    font-size: 2rem;
+    animation: sparkle 2s infinite;
+}
+
+@keyframes sparkle {
+
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    50% {
+        transform: scale(1.2) rotate(10deg);
+    }
+}
+
+.concierge-info h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: white;
+}
+
+.concierge-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.concierge-input-wrapper {
+    margin-bottom: 1rem;
+}
+
+.concierge-input-wrapper input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.concierge-input-wrapper input::placeholder {
+    color: rgba(51, 51, 51, 0.6);
+}
+
+.concierge-input-wrapper input:focus {
+    outline: none;
+    background: white;
+    border-color: #febb02;
+    box-shadow: 0 0 0 3px rgba(254, 187, 2, 0.2);
+}
+
+.concierge-btn {
+    background: #febb02;
+    color: #003580;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.concierge-btn:hover {
+    background: #ffca28;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(254, 187, 2, 0.4);
+}
+
+.concierge-suggestions {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.action-btn {
+    background: var(--booking-blue);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.action-btn:hover {
+    background: var(--booking-blue-light);
+    transform: translateY(-2px);
 }

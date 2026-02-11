@@ -12,11 +12,6 @@
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="admin.css">
-    <!-- Leaflet for Interactive Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    <!-- jsPDF for Invoices -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
@@ -192,14 +187,24 @@
                 <h2 id="modalRestoName">Réservation</h2>
 
                 <div class="modal-tabs" id="modalTabs">
-                    <button class="tab-btn active" onclick="switchModalTab('booking')">Réservation</button>
-                    <button class="tab-btn" onclick="switchModalTab('tables')">Plan de Salle</button>
-                    <button class="tab-btn" onclick="switchModalTab('menu')">Menu</button>
+                    <button class="tab-btn active" onclick="switchModalTab('presentation')">Le Restaurant</button>
+                    <button class="tab-btn" onclick="switchModalTab('menu')">La Carte</button>
                     <button class="tab-btn" onclick="switchModalTab('reviews')">Avis</button>
+                    <button class="tab-btn" onclick="switchModalTab('booking')">Réservation</button>
+                    <button class="tab-btn" onclick="switchModalTab('tables')" style="display:none">Plan</button>
+                </div>
+
+                <!-- Step 0: Presentation -->
+                <div id="tab-presentation" class="tab-content active">
+                    <div id="presentationContent">
+                        <!-- Dynamically filled -->
+                    </div>
+                    <button class="reserve-btn" onclick="switchModalTab('menu')" style="margin-top: 20px;">Voir la
+                        Carte</button>
                 </div>
 
                 <!-- Step 1: Booking Details -->
-                <div id="tab-booking" class="tab-content active">
+                <div id="tab-booking" class="tab-content">
                     <img id="tablePreview" src="" class="table-preview" alt="Prévisualisation de la table">
                     <form id="bookingForm">
                         <div class="form-row">
@@ -260,27 +265,30 @@
                 <!-- Menus & Reviews -->
                 <div id="tab-menu" class="tab-content">
                     <div id="digitalMenuContent"></div>
-                </div>
-                <div id="tab-reviews" class="tab-content">
-                    <div id="reviewsContent"></div>
+                    <button class="reserve-btn" onclick="switchModalTab('booking')" style="margin-top: 20px;">Réserver
+                        maintenant</button>
                 </div>
             </div>
-
-            <!-- Success -->
-            <div id="successView" style="display: none;" class="success-msg">
-                <div class="success-icon">✓</div>
-                <h2>Réservation Confirmée !</h2>
-                <p>Acompte payé. Un SMS de confirmation a été envoyé.</p>
-                <div id="bookingSummary"
-                    style="margin: 20px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; text-align: left;">
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="see-availability" onclick="generatePDF()" style="background: #e74c3c; flex: 1;">📄
-                        Télécharger Facture</button>
-                    <button class="see-availability" onclick="closeModal()" style="flex: 1;">Fermer</button>
-                </div>
+            <div id="tab-reviews" class="tab-content">
+                <div id="reviewsContent"></div>
             </div>
         </div>
+
+        <!-- Success -->
+        <div id="successView" style="display: none;" class="success-msg">
+            <div class="success-icon">✓</div>
+            <h2>Réservation Confirmée !</h2>
+            <p>Acompte payé. Un SMS de confirmation a été envoyé.</p>
+            <div id="bookingSummary"
+                style="margin: 20px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; text-align: left;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="see-availability" onclick="generatePDF()" style="background: #e74c3c; flex: 1;">📄
+                    Télécharger Facture</button>
+                <button class="see-availability" onclick="closeModal()" style="flex: 1;">Fermer</button>
+            </div>
+        </div>
+    </div>
     </div>
 
     <!-- Owner Dashboard Overlay -->
@@ -612,10 +620,7 @@
         </div>
     </div>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="data.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="/app.js"></script>
 </body>
 
 </html>

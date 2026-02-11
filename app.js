@@ -1,3 +1,11 @@
+import { restaurants } from './data.js';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import Chart from 'chart.js/auto';
+import { jsPDF } from 'jspdf';
+import './style.css';
+import './admin.css';
+
 // Safe state management
 let bookings = [];
 try { bookings = JSON.parse(localStorage.getItem('teranga_bookings')) || []; } catch (e) { }
@@ -11,37 +19,36 @@ let isMapVisible = false;
 let currentResto = null;
 let currentBookingData = null;
 
-// Link to global data
-const restaurants = window.restaurantsData || [];
-
 // Dropdown Toggle (Ultra Robust)
-window.showDestinations = function (e) {
+function showDestinations(e) {
     if (e) e.stopPropagation();
     var dropdown = document.getElementById('destinationDropdown');
     if (dropdown) {
         dropdown.style.display = 'block';
         dropdown.style.opacity = '1';
         dropdown.style.visibility = 'visible';
-        console.log("Teranga: Dropdown forced OPEN");
     }
-};
+}
+window.showDestinations = showDestinations;
 
-window.selectDestination = function (city) {
+function selectDestination(city) {
     var input = document.getElementById('searchInput');
     if (input) input.value = city;
     var dropdown = document.getElementById('destinationDropdown');
     if (dropdown) dropdown.style.display = 'none';
-    window.filterRestaurants();
-};
+    filterRestaurants();
+}
+window.selectDestination = selectDestination;
 
-window.filterDestinations = function () {
+function filterDestinations() {
     var val = (document.getElementById('searchInput')?.value || '').toLowerCase();
     var items = document.querySelectorAll('.dropdown-item');
     items.forEach(function (item) {
         var text = item.innerText.toLowerCase();
         item.style.display = text.includes(val) ? 'flex' : 'none';
     });
-};
+}
+window.filterDestinations = filterDestinations;
 
 // Global click to close
 document.addEventListener('click', function (e) {
@@ -63,7 +70,7 @@ function initMap() {
     window.map = L.map('map').setView([14.6, -17.2], 9);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
     window.markers.addTo(window.map);
-    updateMarkers(window.restaurantsData || []);
+    updateMarkers(restaurants);
 }
 
 function updateMarkers(items) {
@@ -87,7 +94,7 @@ function updateMarkers(items) {
     }
 }
 
-window.toggleMapView = () => {
+function toggleMapView() {
     isMapVisible = !isMapVisible;
     const mapContainer = document.getElementById('mapContainer');
     const toggleBtn = document.getElementById('toggleMapBtn');
@@ -100,7 +107,8 @@ window.toggleMapView = () => {
         mapContainer.style.display = 'none';
         toggleBtn.innerText = '🗺️ Voir la carte';
     }
-};
+}
+window.toggleMapView = toggleMapView;
 
 function getRatingText(rating) {
     if (rating >= 4.7) return "Exceptionnel";
@@ -157,15 +165,14 @@ function renderRestaurants(items) {
                         <div class="rating-text">${ratingText}</div>
                         <div class="rating-score">${resto.rating}</div>
                     </div>
-                    <button class="see-availability" onclick="openBooking(${resto.id})">Voir les disponibilités</button>
+                    <button class="see-availability" onclick="openBooking(${resto.id})">Découvrir l'établissement</button>
                 </div>
             </div>
         </div>`;
     }).join('');
 }
 
-window.filterRestaurants = () => {
-    const restaurants = window.restaurantsData || [];
+function filterRestaurants() {
     const searchInput = document.getElementById('searchInput');
     const term = (searchInput ? searchInput.value : '').toLowerCase();
 
@@ -186,39 +193,46 @@ window.filterRestaurants = () => {
     });
     renderRestaurants(filtered);
     if (window.map) updateMarkers(filtered);
-};
+}
+window.filterRestaurants = filterRestaurants;
 
-window.openBooking = (id) => {
-    const data = window.restaurantsData || [];
-    currentResto = data.find(r => r.id === id);
+function openBooking(id) {
+    currentResto = restaurants.find(r => r.id === id);
     if (!currentResto) {
         console.error("Teranga: Restaurant not found with ID", id);
         return;
     }
 
-    document.getElementById('modalRestoName').innerText = `Chez ${currentResto.name}`;
+    const displayName = currentResto.name.toLowerCase().startsWith('chez') ? currentResto.name : `Chez ${currentResto.name}`;
+    document.getElementById('modalRestoName').innerText = displayName;
+
     document.getElementById('tablePreview').src = currentResto.tableImage;
     document.getElementById('tablePreview').style.display = 'block';
     document.getElementById('bookingFlowWrapper').style.display = 'block';
     document.getElementById('successView').style.display = 'none';
     document.getElementById('modalTabs').style.display = 'flex';
-    switchModalTab('booking');
+
+    renderPresentation(currentResto);
     renderMenu(currentResto.menu);
     renderReviews(currentResto.reviews);
     renderFloorPlan();
 
+    switchModalTab('presentation');
+
     const modal = document.getElementById('bookingModal');
     if (modal) {
         modal.classList.add('active');
-        modal.style.display = 'flex'; // Explicitly set for insurance
+        modal.style.display = 'flex';
     }
-};
+}
+window.openBooking = openBooking;
 
-window.switchModalTab = (tabId) => {
+function switchModalTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${tabId}'`)));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tabId}`));
     if (tabId === 'tables') renderFloorPlan();
-};
+}
+window.switchModalTab = switchModalTab;
 
 let selectedTable = null;
 function renderFloorPlan() {
@@ -241,14 +255,15 @@ function renderFloorPlan() {
     `).join('');
 }
 
-window.selectTable = (id, name) => {
+function selectTable(id, name) {
     if (selectedTable && selectedTable.id === id) {
         selectedTable = null;
     } else {
         selectedTable = { id, name };
     }
     renderFloorPlan();
-};
+}
+window.selectTable = selectTable;
 
 document.getElementById('bookingForm').onsubmit = (e) => {
     e.preventDefault();
@@ -271,7 +286,7 @@ document.getElementById('bookingForm').onsubmit = (e) => {
     switchModalTab('payment');
 };
 
-window.processPayment = (method) => {
+function processPayment(method) {
     const btn = event.currentTarget;
     const oldText = btn.innerHTML;
     btn.innerHTML = 'Traitement...';
@@ -297,12 +312,13 @@ window.processPayment = (method) => {
         btn.innerHTML = oldText;
         if (typeof renderOwnerBookings === 'function') renderOwnerBookings(); // Refresh if open
     }, 1500);
-};
+}
+window.processPayment = processPayment;
 
 // Owner Dashboard Logic
 let currentOwnerRestoId = 1; // Default to Le Lagon 1 for demo
 
-window.toggleOwnerDashboard = () => {
+function toggleOwnerDashboard() {
     const dash = document.getElementById('ownerDashboard');
     const isVisible = dash.style.display === 'block';
     dash.style.display = isVisible ? 'none' : 'block';
@@ -310,9 +326,10 @@ window.toggleOwnerDashboard = () => {
         switchOwnerTab('reservations');
         renderOwnerBookings();
     }
-};
+}
+window.toggleOwnerDashboard = toggleOwnerDashboard;
 
-window.switchOwnerTab = (tabId) => {
+function switchOwnerTab(tabId) {
     document.querySelectorAll('.owner-tab-content').forEach(c => c.style.display = 'none');
     document.getElementById(`owner-tab-${tabId}`).style.display = 'block';
 
@@ -322,7 +339,8 @@ window.switchOwnerTab = (tabId) => {
 
     if (tabId === 'menu') renderMenuEditor();
     if (tabId === 'stats') renderStatsChart();
-};
+}
+window.switchOwnerTab = switchOwnerTab;
 
 let bookingsChart = null;
 function renderStatsChart() {
@@ -387,6 +405,7 @@ function renderOwnerBookings() {
     document.getElementById('statIncome').innerText = `${totalIncome.toLocaleString()} FCFA`;
 }
 
+// Menu Management Functions
 function renderMenuEditor() {
     const container = document.getElementById('menuEditorContainer');
     const resto = restaurants.find(r => r.id === currentOwnerRestoId);
@@ -443,13 +462,51 @@ window.saveMenuChanges = () => {
     renderRestaurants(restaurants); // Refresh consumer view
 };
 
-window.closeModal = () => {
+function closeModal() {
     const modal = document.getElementById('bookingModal');
     if (modal) {
         modal.classList.remove('active');
         modal.style.display = 'none';
     }
-};
+}
+window.closeModal = closeModal;
+
+function renderPresentation(resto) {
+    const target = document.getElementById('presentationContent');
+    if (!target) return;
+
+    target.innerHTML = `
+        <div class="presentation-view">
+            <div class="main-image-wrapper" style="position: relative; border-radius: 12px; overflow: hidden; margin-bottom: 20px; height: 250px;">
+                <img src="${resto.image}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); padding: 20px; color: white;">
+                    <h3 style="margin: 0; font-size: 1.5rem;">${resto.name}</h3>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.9;">${resto.district}, ${resto.city}</p>
+                </div>
+            </div>
+            
+            <div class="resto-description" style="margin-bottom: 25px;">
+                <p style="color: #444; line-height: 1.6; font-size: 1rem;">${resto.description}</p>
+            </div>
+            
+            <div class="resto-highlights" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                ${resto.features.map(f => `
+                    <div style="background: #f0f6ff; border: 1px solid #e0e9f5; border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2rem;">✨</span>
+                        <span style="font-size: 0.85rem; color: #003580; font-weight: 600;">${f}</span>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div style="border-top: 1px solid #eee; padding-top: 20px;">
+                <h4 style="margin-bottom: 15px; color: #003580;">Notre ambiance</h4>
+                <div style="height: 200px; border-radius: 12px; overflow: hidden;">
+                    <img src="${resto.tableImage}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    `;
+}
 
 function renderMenu(menu) {
     const target = document.getElementById('digitalMenuContent');
@@ -474,8 +531,7 @@ function renderReviews(reviews) {
         <div class="review-item"><div class="review-header"><strong>${r.author}</strong><span style="color:#febb02">${'★'.repeat(r.rating)}</span></div><p class="review-comment">"${r.comment}"</p></div>`).join('') : '<p>Pas d\'avis.</p>';
 }
 
-window.generatePDF = () => {
-    const { jsPDF } = window.jspdf;
+function generatePDF() {
     const doc = new jsPDF();
     const booking = bookings[bookings.length - 1]; // Get latest booking
     const pdfResto = restaurants.find(r => r.name === booking.resto);
@@ -544,10 +600,11 @@ window.generatePDF = () => {
     }
 
     doc.save(`Facture_TerangaReserve_${booking.id}.pdf`);
-};
+}
+window.generatePDF = generatePDF;
 
 // Admin Backoffice / Master Portal Logic
-window.toggleAdminPortal = () => {
+function toggleAdminPortal() {
     const portal = document.getElementById('adminPortal');
     const isVisible = portal.style.display === 'flex';
     portal.style.display = isVisible ? 'none' : 'flex';
@@ -555,11 +612,15 @@ window.toggleAdminPortal = () => {
         switchAdminTab('dashboard');
         refreshAdminStats();
     }
-};
+}
+window.toggleAdminPortal = toggleAdminPortal;
 
-window.closeAdminPortal = () => document.getElementById('adminPortal').style.display = 'none';
+function closeAdminPortal() {
+    document.getElementById('adminPortal').style.display = 'none';
+}
+window.closeAdminPortal = closeAdminPortal;
 
-window.switchAdminTab = (tabId) => {
+function switchAdminTab(tabId) {
     document.querySelectorAll('.admin-content').forEach(c => c.style.display = 'none');
     document.getElementById(`admin-tab-${tabId}`).style.display = 'block';
 
@@ -568,7 +629,8 @@ window.switchAdminTab = (tabId) => {
     });
 
     document.getElementById('adminTitle').innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
-};
+}
+window.switchAdminTab = switchAdminTab;
 
 function refreshAdminStats() {
     const totalRevenue = bookings.reduce((sum, b) => sum + (parseInt(b.amount.replace(/[^0-9]/g, '')) || 0), 0);
@@ -613,17 +675,19 @@ function refreshAdminStats() {
     `).join('');
 }
 
-window.updateCommission = () => {
+function updateCommission() {
     const rate = document.getElementById('commissionRate').value;
     localStorage.setItem('teranga_commission_rate', rate);
     alert(`Taux de commission mis à jour : ${rate}%`);
     refreshAdminStats();
-};
+}
+window.updateCommission = updateCommission;
 
-window.toggleAddRestoModal = () => {
+function toggleAddRestoModal() {
     const modal = document.getElementById('admin-modal-resto');
     modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
-};
+}
+window.toggleAddRestoModal = toggleAddRestoModal;
 
 // Handle New Restaurant Registration
 document.getElementById('addRestoForm').addEventListener('submit', (e) => {
@@ -650,7 +714,7 @@ document.getElementById('addRestoForm').addEventListener('submit', (e) => {
     alert(`Restaurant "${newResto.name}" inscrit avec succès !`);
 });
 
-window.exportData = (format) => {
+function exportData(format) {
     const data = {
         restaurants: restaurants,
         bookings: bookings,
@@ -668,10 +732,11 @@ window.exportData = (format) => {
     } else {
         alert('Exportation CSV générée (Simulation) - 48 lignes exportées vers cloud_backup.csv');
     }
-};
+}
+window.exportData = exportData;
 
 // Teranga Concierge Logic
-window.runConcierge = () => {
+function runConcierge() {
     const input = document.getElementById('conciergeInput').value.toLowerCase();
     const resultsDiv = document.getElementById('conciergeResults');
 
@@ -709,23 +774,29 @@ window.runConcierge = () => {
         resultsDiv.innerHTML = `Je n'ai pas trouvé d'établissement correspondant exactement à cette ambiance, mais voici nos meilleures tables du moment.`;
         window.conciergeMatches = restaurants;
     }
-};
+}
+window.runConcierge = runConcierge;
 
-window.filterByConcierge = () => {
+function filterByConcierge() {
     if (window.conciergeMatches) {
         renderRestaurants(window.conciergeMatches);
         document.getElementById('conciergeResults').style.display = 'none';
         document.getElementById('resultsCount').innerText = `${window.conciergeMatches.length} pépites trouvées par votre Concierge`;
     }
-};
+}
+window.filterByConcierge = filterByConcierge;
 
 // Passport Gastronomique Logic
-window.openPassport = () => {
+function openPassport() {
     renderPassport();
     document.getElementById('passportModal').style.display = 'flex';
-};
+}
+window.openPassport = openPassport;
 
-window.closePassport = () => document.getElementById('passportModal').style.display = 'none';
+function closePassport() {
+    document.getElementById('passportModal').style.display = 'none';
+}
+window.closePassport = closePassport;
 
 function renderPassport() {
     const cities = ["Dakar", "Saly", "Saint-Louis", "Cap Skirring"];
@@ -752,8 +823,7 @@ function renderPassport() {
 function initTeranga() {
     console.log("Teranga: Initializing plateforme...");
     try {
-        const data = window.restaurantsData || [];
-        renderRestaurants(data);
+        renderRestaurants(restaurants);
     } catch (err) {
         console.error("Teranga: Error during init:", err);
     }
