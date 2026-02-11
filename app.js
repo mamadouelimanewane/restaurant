@@ -11,6 +11,9 @@ let isMapVisible = false;
 let currentResto = null;
 let currentBookingData = null;
 
+// Link to global data
+const restaurants = window.restaurantsData || [];
+
 // Dropdown Toggle (Ultra Robust)
 window.showDestinations = function (e) {
     if (e) e.stopPropagation();
@@ -181,7 +184,13 @@ window.filterRestaurants = () => {
 };
 
 window.openBooking = (id) => {
-    currentResto = restaurants.find(r => r.id === id);
+    const data = window.restaurantsData || [];
+    currentResto = data.find(r => r.id === id);
+    if (!currentResto) {
+        console.error("Teranga: Restaurant not found with ID", id);
+        return;
+    }
+
     document.getElementById('modalRestoName').innerText = `Chez ${currentResto.name}`;
     document.getElementById('tablePreview').src = currentResto.tableImage;
     document.getElementById('tablePreview').style.display = 'block';
@@ -192,7 +201,12 @@ window.openBooking = (id) => {
     renderMenu(currentResto.menu);
     renderReviews(currentResto.reviews);
     renderFloorPlan();
-    document.getElementById('bookingModal').classList.add('active');
+
+    const modal = document.getElementById('bookingModal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex'; // Explicitly set for insurance
+    }
 };
 
 window.switchModalTab = (tabId) => {
@@ -424,7 +438,13 @@ window.saveMenuChanges = () => {
     renderRestaurants(restaurants); // Refresh consumer view
 };
 
-window.closeModal = () => document.getElementById('bookingModal').classList.remove('active');
+window.closeModal = () => {
+    const modal = document.getElementById('bookingModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    }
+};
 
 function renderMenu(menu) {
     const target = document.getElementById('digitalMenuContent');
