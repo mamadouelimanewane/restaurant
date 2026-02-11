@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerangaReserve | La Crème des Restaurants au Sénégal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+    <!-- Leaflet for Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <!-- jsPDF for Invoices -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+    <header class="hero">
+        <div class="glass-header">
+            <nav class="container nav-bar">
+                <div class="logo">TERANGA<span>RESERVE</span></div>
+                <div class="nav-links">
+                    <button class="passport-btn" onclick="openPassport()">🛂 Mon Passeport</button>
+                    <button class="owner-btn" onclick="toggleOwnerDashboard()">Espace Restaurateur</button>
+                    <button class="nav-btn-map" onclick="toggleMapView()">Voir la Carte</button>
+                </div>
+            </nav>
+            <div class="container hero-content">
+                <h1>L'Excellence Gastronomique au Sénégal</h1>
+                <p>Réservez les meilleures tables de Dakar, Saly et Saint-Louis en un clic.</p>
+            </div>
+            <div class="container search-bar">
+                <div class="search-box">
+                    <label>Ville / Restaurant</label>
+                    <input type="text" id="searchInput" placeholder="Où souhaitez-vous dîner ?"
+                        onkeyup="filterRestaurants()">
+                </div>
+                <div class="search-box">
+                    <label>Date</label>
+                    <input type="date" id="searchDate">
+                </div>
+                <div class="search-box">
+                    <label>Heure</label>
+                    <select id="searchTime">
+                        <option>19:00</option>
+                        <option>20:00</option>
+                        <option>21:00</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <label>Personnes</label>
+                    <input type="number" id="searchPax" value="2" min="1">
+                </div>
+                <button class="search-trigger" onclick="filterRestaurants()">Rechercher</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container main-layout">
+        <!-- Teranga Concierge: Mood-Based Search -->
+        <section class="concierge-section">
+            <div class="concierge-card">
+                <div class="concierge-header">
+                    <span class="magic-icon">✨</span>
+                    <div class="concierge-info">
+                        <h3>Concierge Intelligent Teranga</h3>
+                        <p>Dites-moi ce que vous recherchez au-delà des filtres...</p>
+                    </div>
+                </div>
+                <div class="concierge-input-wrapper">
+                    <input type="text" id="conciergeInput"
+                        placeholder="Ex: Un dîner romantique avec vue mer à Saint-Louis..."
+                        onkeyup="if(event.key==='Enter') runConcierge()">
+                    <button class="concierge-btn" onclick="runConcierge()">Inspirer moi</button>
+                </div>
+                <div id="conciergeResults" class="concierge-suggestions" style="display: none;"></div>
+            </div>
+        </section>
+
+        <aside class="filters-sidebar">
+            <h3>Filtrer par</h3>
+            <div class="filter-group">
+                <h4>Destination</h4>
+                <label><input type="checkbox" value="Dakar" onchange="filterRestaurants()"> Dakar</label>
+                <label><input type="checkbox" value="Saly" onchange="filterRestaurants()"> Saly / Mbour</label>
+                <label><input type="checkbox" value="Saint-Louis" onchange="filterRestaurants()"> Saint-Louis</label>
+                <label><input type="checkbox" value="Cap Skirring" onchange="filterRestaurants()"> Cap Skirring</label>
+            </div>
+            <div class="filter-group">
+                <h4>Cuisine</h4>
+                <label><input type="checkbox" value="Africaine" onchange="filterRestaurants()"> Africaine</label>
+                <label><input type="checkbox" value="Fruits de Mer" onchange="filterRestaurants()"> Fruits de
+                    Mer</label>
+                <label><input type="checkbox" value="Gastronomique" onchange="filterRestaurants()"> Chic</label>
+            </div>
+            <div class="filter-group">
+                <h4>Budget</h4>
+                <label><input type="checkbox" value="€€" onchange="filterRestaurants()"> Économique</label>
+                <label><input type="checkbox" value="€€€" onchange="filterRestaurants()"> Intermédiaire</label>
+                <label><input type="checkbox" value="€€€€" onchange="filterRestaurants()"> Luxe</label>
+            </div>
+        </aside>
+
+        <section class="results-area">
+            <div id="mapContainer" class="map-view-container" style="display: none;">
+                <div id="map"></div>
+            </div>
+            <div class="results-header">
+                <h2 id="resultsCount">Chargement...</h2>
+                <select onchange="sortResults(this.value)">
+                    <option value="rating">Mieux notés</option>
+                    <option value="price-low">Prix croissant</option>
+                    <option value="price-high">Prix décroissant</option>
+                </select>
+            </div>
+            <div class="restaurant-list" id="restaurantGrid"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container" style="text-align: center; padding: 2rem 0;">
+            <p>&copy; 2024 TerangaReserve. Tous droits réservés.</p>
+            <div class="footer-links" style="margin-top: 1rem;">
+                <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.8rem; opacity: 0.7;"
+                    onclick="toggleAdminPortal(); return false;">🔐 Accès Propriétaire / Backoffice Master</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+
+            <div id="bookingFlowWrapper">
+                <h2 id="modalRestoName">Réservation</h2>
+
+                <div class="modal-tabs" id="modalTabs">
+                    <button class="tab-btn active" onclick="switchModalTab('booking')">Réservation</button>
+                    <button class="tab-btn" onclick="switchModalTab('tables')">Plan de Salle</button>
+                    <button class="tab-btn" onclick="switchModalTab('menu')">Menu</button>
+                    <button class="tab-btn" onclick="switchModalTab('reviews')">Avis</button>
+                </div>
+
+                <!-- Step 1: Booking Details -->
+                <div id="tab-booking" class="tab-content active">
+                    <img id="tablePreview" src="" class="table-preview" alt="Prévisualisation de la table">
+                    <form id="bookingForm">
+                        <div class="form-row">
+                            <div class="form-group"><label>Date</label><input type="date" id="bookingDate" required>
+                            </div>
+                            <div class="form-group"><label>Heure</label><input type="time" id="bookingTime" required
+                                    value="20:00"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Convives</label><input type="number" id="guestCount"
+                                    value="2" min="1"></div>
+                            <div class="form-group"><label>Téléphone</label><input type="tel" id="phoneInput"
+                                    placeholder="+221 ..." required></div>
+                        </div>
+                        <button type="submit" class="reserve-btn">Continuer vers l'Acompte</button>
+                    </form>
+                </div>
+
+                <!-- Step 2: Table Selection -->
+                <div id="tab-tables" class="tab-content">
+                    <h3>Choisissez votre emplacement préféré</h3>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.5rem;">Sélectionnez une table disponible
+                        sur le plan interactif.</p>
+                    <div class="floor-plan" id="floorPlan">
+                        <!-- Tables rendered dynamically -->
+                    </div>
+                    <div class="plan-legend">
+                        <span class="legend-item"><span class="legend-dot available"></span> Disponible</span>
+                        <span class="legend-item"><span class="legend-dot selected"></span> Ma sélection</span>
+                        <span class="legend-item"><span class="legend-dot occupied"></span> Occupé</span>
+                    </div>
+                </div>
+
+                <!-- Step 3: Payment (Hidden by default) -->
+                <div id="tab-payment" class="tab-content">
+                    <h3>Confirmer avec un acompte (20%)</h3>
+                    <p id="paymentDepositText" style="font-size: 0.9rem; color: #666; margin: 10px 0;">Calcul de
+                        l'acompte...</p>
+                    <div class="payment-methods">
+                        <div class="pay-btn orange" onclick="processPayment('Orange Money')">
+                            <div class="payment-method-badge">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Orange_logo.svg/1200px-Orange_logo.svg.png"
+                                    class="pay-logo" alt="Orange Money">
+                                <span>Orange Money</span>
+                            </div>
+                        </div>
+                        <div class="pay-btn wave" onclick="processPayment('Wave')">
+                            <div class="payment-method-badge">
+                                <img src="C:/Users/HP/.gemini/antigravity/brain/tempmediaStorage/media__1770813014164.png"
+                                    class="pay-logo" alt="Wave">
+                                <span>Wave</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="tab-btn" style="width: 100%" onclick="switchModalTab('booking')">← Retour</button>
+                </div>
+
+                <!-- Menus & Reviews -->
+                <div id="tab-menu" class="tab-content">
+                    <div id="digitalMenuContent"></div>
+                </div>
+                <div id="tab-reviews" class="tab-content">
+                    <div id="reviewsContent"></div>
+                </div>
+            </div>
+
+            <!-- Success -->
+            <div id="successView" style="display: none;" class="success-msg">
+                <div class="success-icon">✓</div>
+                <h2>Réservation Confirmée !</h2>
+                <p>Acompte payé. Un SMS de confirmation a été envoyé.</p>
+                <div id="bookingSummary"
+                    style="margin: 20px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; text-align: left;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="see-availability" onclick="generatePDF()" style="background: #e74c3c; flex: 1;">📄
+                        Télécharger Facture</button>
+                    <button class="see-availability" onclick="closeModal()" style="flex: 1;">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Owner Dashboard Overlay -->
+    <div id="ownerDashboard">
+        <div class="container dash-card" style="max-width: 1100px; margin-top: 2rem; position: relative;">
+            <span class="close-btn" onclick="toggleOwnerDashboard()">&times;</span>
+            <div class="dash-header">
+                <h2>Portail Partenaire Teranga</h2>
+            </div>
+
+            <div class="modal-tabs">
+                <button class="tab-btn active" id="btnDashReservations"
+                    onclick="switchOwnerTab('reservations')">Réservations</button>
+                <button class="tab-btn" id="btnDashMenu" onclick="switchOwnerTab('menu')">Modifier ma Carte</button>
+                <button class="tab-btn" id="btnDashStats" onclick="switchOwnerTab('stats')">Statistiques</button>
+            </div>
+
+            <!-- Tab: Reservations -->
+            <div id="owner-tab-reservations" class="owner-tab-content">
+                <div class="dash-stats"
+                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="dash-card" style="border: 1px solid #eee;">
+                        <p style="color: #666; font-size: 0.8rem;">Réservations</p>
+                        <h3 id="statToday">0</h3>
+                    </div>
+                    <div class="dash-card" style="border: 1px solid #eee;">
+                        <p style="color: #666; font-size: 0.8rem;">Revenus Acomptes</p>
+                        <h3 id="statIncome">0 FCFA</h3>
+                    </div>
+                    <div class="dash-card" style="border: 1px solid #eee;">
+                        <p style="color: #666; font-size: 0.8rem;">Visibilité</p>
+                        <h3>Premium</h3>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date/Heure</th>
+                            <th>Client</th>
+                            <th>Couverts</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Tab: Menu Management -->
+            <div id="owner-tab-menu" class="owner-tab-content" style="display: none;">
+                <div
+                    style="background: #fff8e1; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.85rem; color: #856404;">
+                    <strong>Mode Édition :</strong> Les changements effectués ici seront visibles immédiatement par les
+                    clients.
+                </div>
+                <button class="see-availability" style="margin-bottom: 1.5rem;"
+                    onclick="alert('Fonctionnalité d\'ajout en cours...')">+ Ajouter un Plat</button>
+                <div id="ownerMenuContent"></div>
+            </div>
+
+            <!-- Tab: Stats -->
+            <div id="owner-tab-stats" class="owner-tab-content" style="display: none;">
+                <div style="height: 300px; margin-bottom: 2rem;">
+                    <canvas id="reservationsChart"></canvas>
+                </div>
+                <div class="admin-card">
+                    <p style="font-size: 0.9rem; color: #666;">Ces statistiques sont calculées en temps réel sur la base
+                        de vos réservations passées et à venir.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Dashboard / Backoffice (Owner of Platform) -->
+    <div id="adminPortal">
+        <aside class="admin-sidebar">
+            <h2>Teranga Admin</h2>
+            <nav class="admin-nav">
+                <div class="admin-nav-item active" onclick="switchAdminTab('dashboard')">🏠 Dashboard Central</div>
+                <div class="admin-nav-item" onclick="switchAdminTab('restaurants')">🍽️ Gestion Restaurants</div>
+                <div class="admin-nav-item" onclick="switchAdminTab('users')">👥 Gestion Utilisateurs</div>
+                <div class="admin-nav-item" onclick="switchAdminTab('visitors')">👁️ Visiteurs & Inscriptions</div>
+                <div class="admin-nav-item" onclick="switchAdminTab('settings')">⚙️ Config & Commissions</div>
+                <div class="admin-nav-item" onclick="switchAdminTab('analytics')">📊 Analytics Globaux</div>
+                <div class="admin-nav-item" onclick="switchAdminTab('backups')">💾 Backups & Données</div>
+                <div class="admin-nav-item" style="margin-top: auto; color: #ff4757;" onclick="closeAdminPortal()">🚪
+                    Quitter</div>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1 id="adminTitle">Dashboard Central</h1>
+                <div class="backup-indicator">
+                    <div class="pulse"></div>
+                    <span>Système en ligne • Synchro Cloud OK</span>
+                </div>
+            </header>
+
+            <!-- Tab: Global Dashboard -->
+            <div id="admin-tab-dashboard" class="admin-content">
+                <div class="admin-stats-grid">
+                    <div class="stat-card">
+                        <h4>Revenus Tots</h4>
+                        <p id="totalRevenueAdmin">0 FCFA</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Restaurants</h4>
+                        <p id="totalPartnersAdmin">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Utilisateurs</h4>
+                        <p id="totalUsersAdmin">12</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Visiteurs (24h)</h4>
+                        <p>142</p>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <h3>Dernières Activités</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Restaurant</th>
+                                <th>Action</th>
+                                <th>Date</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminActivityLog"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Manage Restaurants -->
+            <div id="admin-tab-restaurants" class="admin-content" style="display: none;">
+                <div class="admin-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <h3>Restaurants Partenaires</h3>
+                        <button class="action-btn" onclick="toggleAddRestoModal()">+ Nouveau Restaurant</button>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Ville</th>
+                                <th>Cuisine</th>
+                                <th>Perf</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminRestoList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Manage Users -->
+            <div id="admin-tab-users" class="admin-content" style="display: none;">
+                <div class="admin-card">
+                    <h3>Gestion des Comptes Utilisateurs</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Rôle</th>
+                                <th>Email</th>
+                                <th>Dernière Connexion</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Moussa Diop</strong></td>
+                                <td>Administrateur</td>
+                                <td>moussa@teranga.sn</td>
+                                <td>Il y a 10 min</td>
+                                <td><button class="action-btn">Editer</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Samba Sow</strong></td>
+                                <td>Propriétaire (Lagon)</td>
+                                <td>samba@lagon1.com</td>
+                                <td>Hier</td>
+                                <td><button class="action-btn">Editer</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Visitors & Signups -->
+            <div id="admin-tab-visitors" class="admin-content" style="display: none;">
+                <div class="admin-card">
+                    <div class="admin-stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="stat-card">
+                            <h4>Inscriptions Newsletter</h4>
+                            <p>256</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Demandes Partenariat</h4>
+                            <p>8</p>
+                        </div>
+                    </div>
+                    <h3 style="margin-top: 2rem;">Derniers Visiteurs Inscrits</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Date Inscription</th>
+                                <th>Provenance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>aminata.k@gmail.com</td>
+                                <td>11/02/2026</td>
+                                <td>Dakar Search</td>
+                            </tr>
+                            <tr>
+                                <td>j.dupont@voyage.fr</td>
+                                <td>10/02/2026</td>
+                                <td>Instagram</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Settings & Commissions -->
+            <div id="admin-tab-settings" class="admin-content" style="display: none;">
+                <div class="admin-card">
+                    <h3>Configuration des Commissions</h3>
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem;">Définissez le pourcentage prélevé
+                        par la plateforme sur chaque acompte payé.</p>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label style="color: #94a3b8; display: block; margin-bottom: 8px;">Taux de Commission
+                                (%)</label>
+                            <input type="number" id="commissionRate" value="15"
+                                style="background:#0f172a; border:1px solid #334155; color:white; padding:10px; width:100px; border-radius:4px;">
+                        </div>
+                        <button class="action-btn" style="background:var(--primary); color:#333; margin-top:25px;"
+                            onclick="updateCommission()">Enregistrer le Taux</button>
+                    </div>
+                </div>
+                <div class="admin-stats-grid">
+                    <div class="stat-card">
+                        <h4>Revenus Plateforme (Total)</h4>
+                        <p id="platformCommissionTotal">0 FCFA</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Moyenne par Résa</h4>
+                        <p id="avgCommissionPerRes">0 FCFA</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Data & Backups -->
+            <div id="admin-tab-backups" class="admin-content" style="display: none;">
+                <div class="admin-card">
+                    <h3>Centre de Sauvegarde (JSON/CSV Export)</h3>
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem;">Téléchargez l'intégralité de vos
+                        données restaurants, utilisateurs et transactions pour une sécurité maximale.</p>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="see-availability" onclick="exportData('json')"
+                            style="background:var(--primary); color:#333;">Télécharger Backup JSON</button>
+                        <button class="see-availability" onclick="exportData('csv')"
+                            style="background:#334155;">Exporter Transactions CSV</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal: Ajouter Restaurant -->
+            <div id="admin-modal-resto" class="admin-card"
+                style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:5000; width:500px; max-height: 90vh; overflow-y: auto; background: #1e293b; box-shadow: 0 0 50px rgba(0,0,0,0.5);">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 1.5rem;">
+                    <h3>Inscrire un Nouveau Restaurant</h3>
+                    <span style="cursor:pointer; font-size: 1.5rem;" onclick="toggleAddRestoModal()">&times;</span>
+                </div>
+                <form id="addRestoForm">
+                    <div class="form-group"><label style="display:block; margin-bottom:5px; color:#94a3b8;">Nom du
+                            Restaurant</label><input type="text" id="newRestoName" required
+                            style="width:100%; padding:10px; margin-bottom:15px; background:#0f172a; border:1px solid #334155; color:white; border-radius:4px;">
+                    </div>
+                    <div class="form-group"><label
+                            style="display:block; margin-bottom:5px; color:#94a3b8;">Ville</label><select
+                            id="newRestoCity"
+                            style="width:100%; padding:10px; margin-bottom:15px; background:#0f172a; border:1px solid #334155; color:white; border-radius:4px;">
+                            <option>Dakar</option>
+                            <option>Saly</option>
+                            <option>Saint-Louis</option>
+                        </select></div>
+                    <div class="form-group"><label
+                            style="display:block; margin-bottom:5px; color:#94a3b8;">Cuisine</label><input type="text"
+                            id="newRestoCuisine" required
+                            style="width:100%; padding:10px; margin-bottom:15px; background:#0f172a; border:1px solid #334155; color:white; border-radius:4px;">
+                    </div>
+                    <div class="form-group"><label style="display:block; margin-bottom:5px; color:#94a3b8;">Prix Moyen
+                            (FCFA)</label><input type="number" id="newRestoAvgPrice" required
+                            style="width:100%; padding:10px; margin-bottom:15px; background:#0f172a; border:1px solid #334155; color:white; border-radius:4px;">
+                    </div>
+                    <button type="submit" class="reserve-btn"
+                        style="width:100%; margin-top:10px; padding:12px;">Enregistrer le Restaurant</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    </div>
+
+    <!-- Passport Modal -->
+    <div id="passportModal" class="modal-overlay">
+        <div class="modal-content passport-container">
+            <span class="close-btn" onclick="closePassport()">&times;</span>
+            <div class="passport-header">
+                <h2>Votre Passeport Teranga</h2>
+                <p>Voyagez à travers les saveurs du Sénégal et collectionnez les expériences.</p>
+            </div>
+            <div class="passport-grid" id="passportGrid">
+                <!-- Stamps rendered dynamically -->
+            </div>
+            <div id="passportReward" class="passport-reward" style="display: none;">
+                <h3>🎉 Ambassadeur Teranga !</h3>
+                <p>Vous avez exploré tout le Sénégal. Votre prochaine commission plateforme est offerte !</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
