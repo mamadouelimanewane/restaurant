@@ -1,4 +1,4 @@
-const restaurants = [
+var restaurants = [
     {
         id: 1,
         name: "Le Lagon 1",

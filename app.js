@@ -1,50 +1,51 @@
-const restaurants = window.restaurantsData;
-const grid = document.getElementById('restaurantGrid');
-const resultsCount = document.getElementById('resultsCount');
+// Safe state management
+let bookings = [];
+try { bookings = JSON.parse(localStorage.getItem('teranga_bookings')) || []; } catch (e) { }
+let passport = {};
+try { passport = JSON.parse(localStorage.getItem('teranga_passport')) || {}; } catch (e) { }
 
-let map = null;
-let markers = L.layerGroup();
+// UI State
+window.map = null;
+window.markers = L.layerGroup();
 let isMapVisible = false;
 let currentResto = null;
-let currentBookingData = null; // Temp storage before payment
+let currentBookingData = null;
 
-// State management
-let bookings = JSON.parse(localStorage.getItem('teranga_bookings')) || [];
-let passport = JSON.parse(localStorage.getItem('teranga_passport')) || {};
-
-// Search Dropdown Functions
-window.showDestinations = (e) => {
+// Dropdown Toggle (Ultra Robust)
+window.showDestinations = function (e) {
     if (e) e.stopPropagation();
-    const dropdown = document.getElementById('destinationDropdown');
+    var dropdown = document.getElementById('destinationDropdown');
     if (dropdown) {
-        dropdown.style.setProperty('display', 'block', 'important');
-        console.log("Dropdown visibility forced to block");
+        dropdown.style.display = 'block';
+        dropdown.style.opacity = '1';
+        dropdown.style.visibility = 'visible';
+        console.log("Teranga: Dropdown forced OPEN");
     }
 };
 
-window.selectDestination = (city) => {
-    document.getElementById('searchInput').value = city;
-    document.getElementById('destinationDropdown').style.display = 'none';
-    filterRestaurants();
+window.selectDestination = function (city) {
+    var input = document.getElementById('searchInput');
+    if (input) input.value = city;
+    var dropdown = document.getElementById('destinationDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+    window.filterRestaurants();
 };
 
-window.filterDestinations = () => {
-    const val = document.getElementById('searchInput').value.toLowerCase();
-    const items = document.querySelectorAll('.dropdown-item');
-    items.forEach(item => {
-        const text = item.innerText.toLowerCase();
+window.filterDestinations = function () {
+    var val = (document.getElementById('searchInput')?.value || '').toLowerCase();
+    var items = document.querySelectorAll('.dropdown-item');
+    items.forEach(function (item) {
+        var text = item.innerText.toLowerCase();
         item.style.display = text.includes(val) ? 'flex' : 'none';
     });
 };
 
-// Close dropdown when clicking outside
-document.addEventListener('mousedown', (e) => {
-    const dropdown = document.getElementById('destinationDropdown');
-    const wrapper = document.querySelector('.destination-wrapper');
-    if (dropdown && dropdown.style.display === 'block') {
-        if (!wrapper.contains(e.target)) {
-            dropdown.style.display = 'none';
-        }
+// Global click to close
+document.addEventListener('click', function (e) {
+    var wrapper = document.querySelector('.destination-wrapper');
+    var dropdown = document.getElementById('destinationDropdown');
+    if (dropdown && wrapper && !wrapper.contains(e.target)) {
+        dropdown.style.display = 'none';
     }
 });
 
@@ -55,15 +56,16 @@ window.addEventListener('keydown', (e) => {
 
 // Initialize Map
 function initMap() {
-    if (map) return;
-    map = L.map('map').setView([14.6, -17.2], 9);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    markers.addTo(map);
-    updateMarkers(restaurants);
+    if (window.map) return;
+    window.map = L.map('map').setView([14.6, -17.2], 9);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+    window.markers.addTo(window.map);
+    updateMarkers(window.restaurantsData || []);
 }
 
 function updateMarkers(items) {
-    markers.clearLayers();
+    if (!window.markers) return;
+    window.markers.clearLayers();
     items.forEach(resto => {
         if (!resto.lat || !resto.lng) return;
         const popup = `
@@ -74,11 +76,11 @@ function updateMarkers(items) {
                     <button onclick="openBooking(${resto.id})" style="background: #006ce4; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; float: right; cursor: pointer;">Réserver</button>
                 </div>
             </div>`;
-        L.marker([resto.lat, resto.lng]).bindPopup(popup).addTo(markers);
+        L.marker([resto.lat, resto.lng]).bindPopup(popup).addTo(window.markers);
     });
-    if (items.length > 0) {
+    if (items.length > 0 && window.map) {
         const group = new L.featureGroup(items.map(r => L.marker([r.lat, r.lng])));
-        map.fitBounds(group.getBounds().pad(0.1));
+        window.map.fitBounds(group.getBounds().pad(0.1));
     }
 }
 
@@ -90,7 +92,7 @@ window.toggleMapView = () => {
         mapContainer.style.display = 'block';
         toggleBtn.innerText = '📋 Voir la liste';
         initMap();
-        setTimeout(() => map.invalidateSize(), 150);
+        setTimeout(() => { if (window.map) window.map.invalidateSize(); }, 150);
     } else {
         mapContainer.style.display = 'none';
         toggleBtn.innerText = '🗺️ Voir la carte';
@@ -105,12 +107,17 @@ function getRatingText(rating) {
 }
 
 function renderRestaurants(items) {
-    resultsCount.innerText = `${items.length} établissements trouvés`;
+    const mainGrid = document.getElementById('restaurantGrid');
+    const countLabel = document.getElementById('resultsCount');
+    if (!mainGrid) return;
+
+    if (countLabel) countLabel.innerText = `${items.length} établissements trouvés`;
+
     if (!items.length) {
-        grid.innerHTML = '<p style="padding: 2rem; text-align: center; width: 100%;">Aucun résultat ne correspond à vos critères.</p>';
+        mainGrid.innerHTML = '<p style="padding: 2rem; text-align: center; width: 100%;">Aucun résultat ne correspond à vos critères.</p>';
         return;
     }
-    grid.innerHTML = items.map(resto => {
+    mainGrid.innerHTML = items.map(resto => {
         const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${resto.lat},${resto.lng}`;
         const ratingText = getRatingText(resto.rating);
         return `
@@ -150,7 +157,9 @@ function renderRestaurants(items) {
 }
 
 window.filterRestaurants = () => {
-    const term = document.getElementById('searchInput').value.toLowerCase();
+    const restaurants = window.restaurantsData || [];
+    const searchInput = document.getElementById('searchInput');
+    const term = (searchInput ? searchInput.value : '').toLowerCase();
 
     // Improved robust selection for checkboxes
     const locsChecked = Array.from(document.querySelectorAll('.filters-sidebar input[type="checkbox"]'))
@@ -168,7 +177,7 @@ window.filterRestaurants = () => {
         return matchesTerm && matchesLoc && matchesCui;
     });
     renderRestaurants(filtered);
-    if (map) updateMarkers(filtered);
+    if (window.map) updateMarkers(filtered);
 };
 
 window.openBooking = (id) => {
@@ -715,72 +724,45 @@ function renderPassport() {
     document.getElementById('passportReward').style.display = allUnlocked ? 'block' : 'none';
 }
 
-function renderInspiration() {
-    console.log("Rendering inspiration section...");
-    grid.innerHTML = `
-        <div style="grid-column: 1/-1; margin-top: 2rem; width: 100%;">
-            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #1a1a1a;">Explorez le Sénégal par destination</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; width: 100%;">
-                <div class="inspiration-card" onclick="selectDestination('Dakar')" style="background-image: url('https://images.unsplash.com/photo-1544124499-58912cbddaad?auto=format&fit=crop&q=80&w=600');">
-                    <div class="inspiration-overlay">
-                        <h4>Dakar</h4>
-                        <p>Plages et vie nocturne</p>
-                    </div>
-                </div>
-                <div class="inspiration-card" onclick="selectDestination('Saly')" style="background-image: url('https://images.unsplash.com/photo-1563200729-067645f7f3bd?auto=format&fit=crop&q=80&w=600');">
-                    <div class="inspiration-overlay">
-                        <h4>Saly / Mbour</h4>
-                        <p>Station balnéaire</p>
-                    </div>
-                </div>
-                <div class="inspiration-card" onclick="selectDestination('Saint-Louis')" style="background-image: url('https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=600');">
-                    <div class="inspiration-overlay">
-                        <h4>Saint-Louis</h4>
-                        <p>Culture et histoire</p>
-                    </div>
-                </div>
-                <div class="inspiration-card" onclick="selectDestination('Cap Skirring')" style="background-image: url('https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=600');">
-                    <div class="inspiration-overlay">
-                        <h4>Cap Skirring</h4>
-                        <p>Détente absolue</p>
-                    </div>
-                </div>
-            </div>
-            
-            <h3 style="font-size: 1.5rem; font-weight: 700; margin-top: 3rem; margin-bottom: 1.5rem; color: #1a1a1a;">Nos coups de cœur du moment</h3>
-            <div id="featuredRestaurantsGrid" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
-                <!-- Fallback to showing all restaurants if the above grid is empty -->
-            </div>
-        </div>
-    `;
+function initTeranga() {
+    console.log("Teranga: Initializing Listing...");
+    try {
+        const data = window.restaurantsData || [];
+        const listingGrid = document.getElementById('dynamicListingGrid');
+        const countLabel = document.getElementById('resultsCount');
 
-    // Also render all restaurants below inspiration to ensure page is NOT empty
-    const listingGrid = document.getElementById('featuredRestaurantsGrid');
-    if (listingGrid && restaurants) {
-        listingGrid.innerHTML = restaurants.map(resto => {
-            const ratingText = getRatingText(resto.rating);
-            return `
-            <div class="booking-card" style="margin-bottom: 1rem;">
-                <div class="booking-card-img-container"><img src="${resto.image}" class="booking-card-img"></div>
-                <div class="booking-card-content">
-                    <div class="card-details">
-                        <h3>${resto.name}</h3>
-                        <div class="card-location">${resto.city}</div>
-                        <div class="card-cuisine">${resto.cuisine}</div>
+        if (!listingGrid) {
+            console.warn("Teranga: dynamicListingGrid not found yet.");
+            return;
+        }
+
+        if (data.length > 0) {
+            listingGrid.innerHTML = data.map(resto => {
+                const ratingText = getRatingText(resto.rating);
+                return `
+                <div class="booking-card">
+                    <div class="booking-card-img-container"><img src="${resto.image}" class="booking-card-img" onerror="this.src='https://via.placeholder.com/300?text=Resto'"></div>
+                    <div class="booking-card-content">
+                        <div class="card-details">
+                            <h3 style="color:#006ce4;">${resto.name}</h3>
+                            <div class="card-location" style="font-size:0.9rem;">${resto.city}, Sénégal • <span style="color:#008009;">✅ Dispo</span></div>
+                            <div class="card-cuisine">${resto.cuisine}</div>
+                            <div style="color: #008009; font-weight:700; font-size:0.85rem; margin-top:8px;">L'un de nos meilleurs choix à ${resto.city}</div>
+                        </div>
+                        <div class="card-right-panel">
+                            <div class="rating-container"><div class="rating-text">${ratingText}</div><div class="rating-score">${resto.rating}</div></div>
+                            <button class="see-availability" onclick="openBooking(${resto.id})">Voir les disponibilités</button>
+                        </div>
                     </div>
-                    <div class="card-right-panel">
-                        <div class="rating-container"><div class="rating-text">${ratingText}</div><div class="rating-score">${resto.rating}</div></div>
-                        <button class="see-availability" onclick="openBooking(${resto.id})">Voir les dispos</button>
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
+                </div>`;
+            }).join('');
+            if (countLabel) countLabel.innerText = "Bienvenue sur TerangaReserve - Découvrez nos établissements";
+        }
+    } catch (err) {
+        console.error("Teranga: Error during init:", err);
     }
-    resultsCount.innerText = "Bienvenue sur TerangaReserve.sn";
 }
 
-// Ensure data is ready then init
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM Loaded, starting init...");
-    renderInspiration(); // Always show inspiration on home load
-});
+// Global execution on both DOM and Window load for maximum safety
+document.addEventListener('DOMContentLoaded', initTeranga);
+window.addEventListener('load', initTeranga);

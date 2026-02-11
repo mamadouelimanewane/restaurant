@@ -123,7 +123,51 @@
             <div class="results-header">
                 <h2 id="resultsCount">Sélection des meilleurs établissements</h2>
             </div>
-            <div class="restaurant-list" id="restaurantGrid"></div>
+            <div class="restaurant-list" id="restaurantGrid">
+                <!-- Inspiration Section (Hardcoded for reliability) -->
+                <div id="inspirationSection" style="grid-column: 1/-1; width: 100%; margin-top: 1rem;">
+                    <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; color: #1a1a1a;">Explorez le
+                        Sénégal par destination</h3>
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+                        <div class="inspiration-card" onclick="selectDestination('Dakar')"
+                            style="background-image: url('https://images.unsplash.com/photo-1544124499-58912cbddaad?auto=format&fit=crop&q=80&w=600');">
+                            <div class="inspiration-overlay">
+                                <h4>Dakar</h4>
+                                <p>Vie nocturne & Affaires</p>
+                            </div>
+                        </div>
+                        <div class="inspiration-card" onclick="selectDestination('Saly')"
+                            style="background-image: url('https://images.unsplash.com/photo-1563200729-067645f7f3bd?auto=format&fit=crop&q=80&w=600');">
+                            <div class="inspiration-overlay">
+                                <h4>Saly</h4>
+                                <p>Station Balnéaire</p>
+                            </div>
+                        </div>
+                        <div class="inspiration-card" onclick="selectDestination('Saint-Louis')"
+                            style="background-image: url('https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=600');">
+                            <div class="inspiration-overlay">
+                                <h4>Saint-Louis</h4>
+                                <p>Culture & Histoire</p>
+                            </div>
+                        </div>
+                        <div class="inspiration-card" onclick="selectDestination('Cap Skirring')"
+                            style="background-image: url('https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=600');">
+                            <div class="inspiration-overlay">
+                                <h4>Cap Skirring</h4>
+                                <p>Détente & Nature</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="featuredRestaurantsSection" style="width: 100%;">
+                    <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1.5rem; color: #1a1a1a;">Nos
+                        meilleures tables recommandées</h3>
+                    <div id="dynamicListingGrid" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 
