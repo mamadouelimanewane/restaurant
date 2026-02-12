@@ -165,11 +165,48 @@ function renderRestaurants(items) {
                         <div class="rating-text">${ratingText}</div>
                         <div class="rating-score">${resto.rating}</div>
                     </div>
-                    <button class="see-availability" onclick="openBooking(${resto.id})">Découvrir l'établissement</button>
+                    <button class="see-availability" data-restaurant-id="${resto.id}">Découvrir l'établissement</button>
                 </div>
             </div>
         </div>`;
     }).join('');
+
+    // ✨ Event delegation for all "Découvrir l'établissement" buttons
+    // This eliminates scope issues with onclick attributes
+    setTimeout(() => {
+        attachRestaurantButtonListeners();
+    }, 100);
+}
+
+// Event delegation for restaurant buttons
+function attachRestaurantButtonListeners() {
+    const listingGrid = document.getElementById('dynamicListingGrid');
+    if (!listingGrid) {
+        console.warn("Teranga: Cannot attach listeners, dynamicListingGrid not found");
+        return;
+    }
+
+    // Remove old listeners if any
+    const oldClone = listingGrid.cloneNode(true);
+    listingGrid.parentNode.replaceChild(oldClone, listingGrid);
+
+    // Add new listener with event delegation
+    const newGrid = document.getElementById('dynamicListingGrid');
+    newGrid.addEventListener('click', function (event) {
+        const button = event.target.closest('.see-availability');
+        if (button) {
+            event.preventDefault();
+            const restaurantId = parseInt(button.getAttribute('data-restaurant-id'), 10);
+            console.log('🎯 Button clicked! Restaurant ID:', restaurantId);
+            if (restaurantId) {
+                openBooking(restaurantId);
+            } else {
+                console.error('❌ No restaurant ID found on button');
+            }
+        }
+    });
+
+    console.log('✅ Restaurant button listeners attached');
 }
 
 function filterRestaurants() {
@@ -197,20 +234,42 @@ function filterRestaurants() {
 window.filterRestaurants = filterRestaurants;
 
 function openBooking(id) {
+    console.log('🎯 openBooking called with ID:', id);
     currentResto = restaurants.find(r => r.id === id);
     if (!currentResto) {
         console.error("Teranga: Restaurant not found with ID", id);
+        alert(`Restaurant avec ID ${id} non trouvé. Veuillez rafraîchir la page.`);
         return;
     }
 
-    const displayName = currentResto.name.toLowerCase().startsWith('chez') ? currentResto.name : `Chez ${currentResto.name}`;
-    document.getElementById('modalRestoName').innerText = displayName;
+    console.log('✅ Restaurant found:', currentResto.name);
 
-    document.getElementById('tablePreview').src = currentResto.tableImage;
-    document.getElementById('tablePreview').style.display = 'block';
-    document.getElementById('bookingFlowWrapper').style.display = 'block';
-    document.getElementById('successView').style.display = 'none';
-    document.getElementById('modalTabs').style.display = 'flex';
+    const displayName = currentResto.name.toLowerCase().startsWith('chez') ? currentResto.name : `Chez ${currentResto.name}`;
+    const modalRestoName = document.getElementById('modalRestoName');
+    if (modalRestoName) {
+        modalRestoName.innerText = displayName;
+    }
+
+    const tablePreview = document.getElementById('tablePreview');
+    if (tablePreview) {
+        tablePreview.src = currentResto.tableImage;
+        tablePreview.style.display = 'block';
+    }
+
+    const bookingFlowWrapper = document.getElementById('bookingFlowWrapper');
+    if (bookingFlowWrapper) {
+        bookingFlowWrapper.style.display = 'block';
+    }
+
+    const successView = document.getElementById('successView');
+    if (successView) {
+        successView.style.display = 'none';
+    }
+
+    const modalTabs = document.getElementById('modalTabs');
+    if (modalTabs) {
+        modalTabs.style.display = 'flex';
+    }
 
     renderPresentation(currentResto);
     renderMenu(currentResto.menu);
@@ -223,8 +282,12 @@ function openBooking(id) {
     if (modal) {
         modal.classList.add('active');
         modal.style.display = 'flex';
+        console.log('✅ Modal opened successfully');
+    } else {
+        console.error('❌ Modal element not found!');
     }
 }
+// Expose to global scope for inline onclick handlers
 window.openBooking = openBooking;
 
 function switchModalTab(tabId) {
@@ -309,8 +372,25 @@ function processPayment(method) {
             Le ${newBooking.date} à ${newBooking.time}<br>
             Acompte (20%) via ${method}: ${newBooking.amount} reçu.
         `;
+
+        // Setup transport button click handler
+        const transportBtn = document.getElementById('btnBookTransportSuccess');
+        if (transportBtn) {
+            transportBtn.onclick = () => {
+                if (typeof openTransportModal === 'function' && currentResto) {
+                    openTransportModal(currentResto.id);
+                } else {
+                    alert("Module de transport en cours de chargement...");
+                }
+            };
+        }
+
         btn.innerHTML = oldText;
         if (typeof renderOwnerBookings === 'function') renderOwnerBookings(); // Refresh if open
+
+        // Trigger gamification check
+        if (typeof checkAndUnlockBadges === 'function') checkAndUnlockBadges();
+        if (typeof checkChallenges === 'function') checkChallenges();
     }, 1500);
 }
 window.processPayment = processPayment;
@@ -475,60 +555,82 @@ function renderPresentation(resto) {
     const target = document.getElementById('presentationContent');
     if (!target) return;
 
+    // Populate gallery
+    const galleryImages = [
+        resto.image,
+        resto.tableImage,
+        resto.image, // Using existing images
+        resto.tableImage
+    ].filter(Boolean);
+
+    const galleryContainer = document.getElementById('restoGallery');
+    if (galleryContainer) {
+        galleryContainer.innerHTML = galleryImages.map((img, idx) =>
+            `<img src="${img}" class="gallery-image" alt="${resto.name} ${idx + 1}" />`
+        ).join('');
+    }
+
+    // Show navigation buttons if more than 1 image
+    const navButtons = document.querySelectorAll('.gallery-nav');
+    navButtons.forEach(btn => btn.style.display = galleryImages.length > 1 ? 'flex' : 'none');
+
     target.innerHTML = `
         <div class="presentation-view">
-            <div class="main-image-wrapper" style="position: relative; border-radius: 12px; overflow: hidden; margin-bottom: 20px; height: 250px;">
-                <img src="${resto.image}" style="width: 100%; height: 100%; object-fit: cover;">
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); padding: 20px; color: white;">
-                    <h3 style="margin: 0; font-size: 1.5rem;">${resto.name}</h3>
-                    <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.9;">${resto.district}, ${resto.city}</p>
-                </div>
+            <div class="resto-info" style="margin: 1.5rem 0;">
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.8rem; color: #1a1a1a;">${resto.name}</h3>
+                <p style="margin: 0; font-size: 1rem; color: #666;">
+                    <span style="font-weight: 600;">${resto.district}, ${resto.city}</span>
+                </p>
             </div>
             
-            <div class="resto-description" style="margin-bottom: 25px;">
-                <p style="color: #444; line-height: 1.6; font-size: 1rem;">${resto.description}</p>
+            <div class="resto-description" style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-left: 4px solid var(--booking-blue); border-radius: 4px;">
+                <p style="color: #444; line-height: 1.7; font-size: 0.95rem; margin: 0;">${resto.description}</p>
             </div>
             
-            <div class="resto-highlights" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-bottom: 25px;">
+            <div class="resto-highlights" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 1.5rem;">
                 ${resto.features.map(f => `
-                    <div style="background: #f0f6ff; border: 1px solid #e0e9f5; border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 8px;">
+                    <div style="background: linear-gradient(135deg, #f0f6ff 0%, #e0e9f5 100%); border: 1px solid #d0ddef; border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                         <span style="font-size: 1.2rem;">✨</span>
                         <span style="font-size: 0.85rem; color: #003580; font-weight: 600;">${f}</span>
                     </div>
                 `).join('')}
             </div>
-            
-            <div style="border-top: 1px solid #eee; padding-top: 20px;">
-                <h4 style="margin-bottom: 15px; color: #003580;">Notre ambiance</h4>
-                <div style="height: 200px; border-radius: 12px; overflow: hidden;">
-                    <img src="${resto.tableImage}" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-            </div>
         </div>
     `;
 }
 
+
 function renderMenu(menu) {
     const target = document.getElementById('digitalMenuContent');
+    if (!target) return;
+
     target.innerHTML = menu ? menu.map(c => `
-        <div class="menu-category">
-            <h4 style="margin: 20px 0 10px 0; color: var(--booking-blue); border-bottom: 2px solid var(--primary); display: inline-block;">${c.category}</h4>
-            ${c.items.map(i => `
-                <div class="menu-item">
-                    <img src="${i.img || 'https://via.placeholder.com/80'}" class="menu-item-img" alt="${i.name}">
-                    <div class="menu-item-info">
-                        <h5 style="margin: 0; font-size: 1rem;">${i.name}</h5>
-                        <p style="margin: 4px 0; font-size: 0.85rem; color: #666;">${i.desc}</p>
-                        <span class="menu-item-price" style="font-weight: bold; color: var(--booking-blue-light);">${i.price}</span>
+        <div class="menu-category" style="margin-bottom: 2rem;">
+            <h4 style="margin: 0 0 1.2rem 0; color: var(--booking-blue); font-size: 1.2rem; font-weight: 700; padding-bottom: 0.5rem; border-bottom: 3px solid var(--booking-yellow);">${c.category}</h4>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                ${c.items.map(i => `
+                    <div class="menu-item-card">
+                        <img src="${i.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=200'}" class="menu-item-image" alt="${i.name}">
+                        <div class="menu-item-content">
+                            <div class="menu-item-name">${i.name}</div>
+                            <div class="menu-item-desc">${i.desc}</div>
+                            <div class="menu-item-price">${i.price}</div>
+                        </div>
                     </div>
-                </div>`).join('')}
-        </div>`).join('') : '<p>Menu non disponible.</p>';
+                `).join('')}
+            </div>
+        </div>
+    `).join('') : '<p style="padding: 2rem; text-align: center; color: #666;">Menu non disponible.</p>';
 }
 
 function renderReviews(reviews) {
-    const target = document.getElementById('reviewsContent');
-    target.innerHTML = reviews ? reviews.map(r => `
-        <div class="review-item"><div class="review-header"><strong>${r.author}</strong><span style="color:#febb02">${'★'.repeat(r.rating)}</span></div><p class="review-comment">"${r.comment}"</p></div>`).join('') : '<p>Pas d\'avis.</p>';
+    if (typeof displayRestaurantReviews === 'function' && currentResto) {
+        displayRestaurantReviews(currentResto.id);
+    } else {
+        const target = document.getElementById('reviewsContent');
+        target.innerHTML = reviews ? reviews.map(r => `
+            <div class="review-item"><div class="review-header"><strong>${r.author}</strong><span style="color:#febb02">${'★'.repeat(r.rating)}</span></div><p class="review-comment">"${r.comment}"</p></div>`).join('') : '<p>Pas d\'avis.</p>';
+    }
 }
 
 function generatePDF() {
@@ -590,12 +692,11 @@ function generatePDF() {
     doc.text('--- TerangaReserve.sn - Le luxe de la réservation ---', 105, 280, { align: 'center' });
 
     // Award Passport Stamp
-    const stampResto = currentBookingData.restaurant;
-    if (stampResto && stampResto.city) {
-        if (!passport[stampResto.city]) {
-            passport[stampResto.city] = new Date().toLocaleDateString('fr-FR');
+    if (pdfResto && pdfResto.city) {
+        if (!passport[pdfResto.city]) {
+            passport[pdfResto.city] = new Date().toLocaleDateString('fr-FR');
             localStorage.setItem('teranga_passport', JSON.stringify(passport));
-            console.log(`Stamp awarded for ${stampResto.city}`);
+            console.log(`Stamp awarded for ${pdfResto.city}`);
         }
     }
 
@@ -735,7 +836,7 @@ function exportData(format) {
 }
 window.exportData = exportData;
 
-// Teranga Concierge Logic
+// Teranga Concierge Logic - Enhanced Version
 function runConcierge() {
     const input = document.getElementById('conciergeInput').value.toLowerCase();
     const resultsDiv = document.getElementById('conciergeResults');
@@ -745,35 +846,171 @@ function runConcierge() {
         return;
     }
 
-    // Smart Keyword Analysis
+    // Advanced Intelligence Layer
+    const currentHour = new Date().getHours();
+    const analysis = {
+        occasion: detectOccasion(input),
+        budget: detectBudget(input),
+        cuisine: detectCuisine(input),
+        atmosphere: detectAtmosphere(input),
+        time: currentHour
+    };
+
+    // Smart Keyword Analysis with Context
     let matches = restaurants.filter(r => {
         const keywords = [r.name, r.city, r.cuisine, r.district, ...r.features].map(k => k.toLowerCase());
-        return keywords.some(k => input.includes(k)) ||
-            (input.includes("romantique") && r.features.includes("Coucher de Soleil")) ||
-            (input.includes("famille") && r.tables.some(t => t.type === 'large')) ||
-            (input.includes("mer") && r.features.includes("Vue Mer"));
+        const baseMatch = keywords.some(k => input.includes(k));
+
+        // Contextual matching
+        const romanticMatch = (input.includes("romantique") || input.includes("amoureux") || input.includes("couple")) &&
+            (r.features.includes("Coucher de Soleil") || r.features.includes("Vue Mer") || r.features.includes("Vue Océan"));
+
+        const familyMatch = (input.includes("famille") || input.includes("enfants") || input.includes("groupe")) &&
+            (r.tables.some(t => t.type === 'large') || r.features.includes("Aire de Jeux Enfants"));
+
+        const businessMatch = (input.includes("business") || input.includes("affaires") || input.includes("professionnel")) &&
+            (r.features.includes("Wifi") || r.features.includes("Parking") || r.rating >= 4.5);
+
+        const viewMatch = (input.includes("vue") || input.includes("mer") || input.includes("océan") || input.includes("fleuve")) &&
+            (r.features.includes("Vue Mer") || r.features.includes("Vue Océan") || r.features.includes("Vue Fleuve"));
+
+        const veganMatch = (input.includes("végétarien") || input.includes("vegan") || input.includes("bio")) &&
+            r.cuisine.toLowerCase().includes("végétarien");
+
+        const luxeMatch = (input.includes("luxe") || input.includes("gastronomique") || input.includes("étoilé")) &&
+            (r.rating >= 4.7 || r.priceRange.includes("€€€€") || r.features.includes("Chef Étoilé"));
+
+        const budgetMatch = (input.includes("pas cher") || input.includes("économique") || input.includes("budget")) &&
+            r.avgPrice <= 10000;
+
+        const liveMatch = (input.includes("musique") || input.includes("live") || input.includes("ambiance festive")) &&
+            (r.features.includes("Live Music") || r.event);
+
+        return baseMatch || romanticMatch || familyMatch || businessMatch || viewMatch ||
+            veganMatch || luxeMatch || budgetMatch || liveMatch;
     });
+
+    // Budget filtering
+    if (analysis.budget) {
+        matches = matches.filter(r => {
+            if (analysis.budget === 'low') return r.avgPrice <= 10000;
+            if (analysis.budget === 'medium') return r.avgPrice > 10000 && r.avgPrice <= 20000;
+            if (analysis.budget === 'high') return r.avgPrice > 20000;
+            return true;
+        });
+    }
+
+    // Time-based filtering
+    if (analysis.time >= 11 && analysis.time < 15 && input.includes("déjeuner")) {
+        // Lunch recommendations
+        matches = matches.sort((a, b) => {
+            const aHasLunch = a.cuisine.includes("Buffet") || a.features.includes("Rapide");
+            const bHasLunch = b.cuisine.includes("Buffet") || b.features.includes("Rapide");
+            return bHasLunch - aHasLunch;
+        });
+    }
 
     resultsDiv.style.display = 'block';
 
     if (matches.length > 0) {
-        const best = matches[0];
-        const recommendations = matches.slice(0, 2).map(m => `<strong>${m.name}</strong>`).join(' et ');
+        const top3 = matches.slice(0, 3);
+        const recommendation = generatePersonalizedRecommendation(top3, analysis, input);
 
         resultsDiv.innerHTML = `
-            <div style="color: var(--booking-blue); font-weight: 600; margin-bottom: 5px;">✨ Analyse Concierge terminée</div>
-            Je vous suggère particulièrement ${recommendations}. 
-            ${input.includes("romantique") ? "L'ambiance y est parfaite pour un moment à deux." : ""}
-            ${input.includes("vue") ? "La vue y est exceptionnelle, je vous conseille de réserver une table en bordure." : ""}
-            <br><button class="action-btn" style="margin-top: 10px; font-size: 0.8rem;" onclick="filterByConcierge()">Voir ces établissements</button>
+            <div style="color: var(--booking-blue); font-weight: 600; margin-bottom: 8px;">✨ Recommandation Personnalisée</div>
+            ${recommendation}
+            <div style="margin-top: 12px; padding: 10px; background: #f0f7ff; border-radius: 6px; font-size: 0.85rem;">
+                <strong>🎯 ${matches.length} restaurant(s) trouvé(s)</strong><br>
+                <span style="color: #666;">Budget moyen: ${Math.round(matches.reduce((sum, r) => sum + r.avgPrice, 0) / matches.length).toLocaleString()} FCFA</span>
+            </div>
+            <button class="action-btn" style="margin-top: 10px; font-size: 0.85rem; width: 100%;" onclick="filterByConcierge()">🔍 Voir toutes les recommandations</button>
         `;
 
-        // Store matches for filtering
         window.conciergeMatches = matches;
     } else {
-        resultsDiv.innerHTML = `Je n'ai pas trouvé d'établissement correspondant exactement à cette ambiance, mais voici nos meilleures tables du moment.`;
-        window.conciergeMatches = restaurants;
+        resultsDiv.innerHTML = `
+            <div style="color: #666;">Je n'ai pas trouvé d'établissement correspondant exactement à vos critères.</div>
+            <div style="margin-top: 10px; padding: 10px; background: #fff8e1; border-radius: 6px; font-size: 0.85rem;">
+                💡 <strong>Suggestion</strong>: Essayez des mots-clés comme "romantique", "famille", "vue mer", "pas cher", ou le nom d'une ville.
+            </div>
+        `;
+        window.conciergeMatches = restaurants.slice(0, 5);
     }
+}
+
+// Helper functions for Concierge AI
+function detectOccasion(input) {
+    if (input.includes("anniversaire") || input.includes("fête")) return "celebration";
+    if (input.includes("romantique") || input.includes("amoureux") || input.includes("st-valentin")) return "romantic";
+    if (input.includes("business") || input.includes("affaires") || input.includes("réunion")) return "business";
+    if (input.includes("famille") || input.includes("enfants")) return "family";
+    return null;
+}
+
+function detectBudget(input) {
+    if (input.includes("pas cher") || input.includes("économique") || input.includes("petit budget")) return "low";
+    if (input.includes("moyen") || input.includes("raisonnable")) return "medium";
+    if (input.includes("luxe") || input.includes("haut de gamme") || input.includes("prestige")) return "high";
+    return null;
+}
+
+function detectCuisine(input) {
+    const cuisines = ["africaine", "fruits de mer", "italien", "français", "fusion", "végétarien", "marocaine"];
+    return cuisines.find(c => input.includes(c)) || null;
+}
+
+function detectAtmosphere(input) {
+    if (input.includes("calme") || input.includes("tranquille")) return "quiet";
+    if (input.includes("animé") || input.includes("festif") || input.includes("musique")) return "lively";
+    if (input.includes("vue") || input.includes("panoramique")) return "scenic";
+    return null;
+}
+
+function generatePersonalizedRecommendation(restaurants, analysis, input) {
+    const top1 = restaurants[0];
+    const top2 = restaurants[1];
+
+    let message = `<div style="margin-bottom: 10px;">`;
+
+    // Occasion-based intro
+    if (analysis.occasion === "romantic") {
+        message += `💕 Pour un moment romantique, je vous recommande particulièrement <strong>${top1.name}</strong>. `;
+        message += `${top1.features.includes("Coucher de Soleil") ? "Le coucher de soleil y est magique." : "L'ambiance est parfaite pour un tête-à-tête."}`;
+    } else if (analysis.occasion === "business") {
+        message += `🤝 Pour votre rendez-vous professionnel, <strong>${top1.name}</strong> est idéal. `;
+        message += `Cadre professionnel, ${top1.features.includes("Wifi") ? "wifi disponible, " : ""}et service irréprochable.`;
+    } else if (analysis.occasion === "family") {
+        message += `👨👩👧👦 Parfait pour la famille ! <strong>${top1.name}</strong> offre `;
+        message += `${top1.features.includes("Aire de Jeux Enfants") ? "une aire de jeux pour les enfants" : "un cadre accueillant pour tous"}.`;
+    } else if (analysis.occasion === "celebration") {
+        message += `🎉 Pour célébrer en beauté, <strong>${top1.name}</strong> (note ${top1.rating}/5) est mon premier choix !`;
+    } else {
+        message += `Je vous suggère <strong>${top1.name}</strong> (${top1.rating}⭐) à ${top1.district}.`;
+    }
+
+    if (top2) {
+        message += ` Également excellent : <strong>${top2.name}</strong>.`;
+    }
+
+    message += `</div>`;
+
+    // Budget info
+    if (analysis.budget === "low") {
+        message += `<div style="font-size: 0.85rem; color: #008009;">💰 Budget respecté : environ ${top1.avgPrice.toLocaleString()} FCFA/pers</div>`;
+    } else if (analysis.budget === "high") {
+        message += `<div style="font-size: 0.85rem; color: #d4111e;">✨ Expérience premium : ${top1.avgPrice.toLocaleString()} FCFA/pers</div>`;
+    }
+
+    // Special features highlight
+    if (top1.promo) {
+        message += `<div style="margin-top: 8px; padding: 8px; background: #e8f5e9; border-left: 3px solid #4caf50; font-size: 0.85rem;">✅ ${top1.promo}</div>`;
+    }
+
+    if (top1.event) {
+        message += `<div style="margin-top: 8px; padding: 8px; background: #f3e5f5; border-left: 3px solid #9c27b0; font-size: 0.85rem;">🎵 ${top1.event}</div>`;
+    }
+
+    return message;
 }
 window.runConcierge = runConcierge;
 
@@ -819,6 +1056,19 @@ function renderPassport() {
     const allUnlocked = cities.every(c => passport[c]);
     document.getElementById('passportReward').style.display = allUnlocked ? 'block' : 'none';
 }
+
+// Gallery Navigation
+function scrollGallery(direction) {
+    const container = document.getElementById('restoGallery');
+    if (!container) return;
+
+    const scrollAmount = container.clientWidth * 0.5; // scroll half the width
+    container.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
+    });
+}
+window.scrollGallery = scrollGallery;
 
 function initTeranga() {
     console.log("Teranga: Initializing plateforme...");

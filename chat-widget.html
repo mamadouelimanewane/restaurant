@@ -1,0 +1,52 @@
+<!-- WhatsApp Chat Widget -->
+<div id="chatWidget" class="chat-widget">
+    <button class="chat-bubble" onclick="toggleChatWidget()">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path
+                d="M16 2C8.268 2 2 8.268 2 16C2 18.568 2.688 21.016 3.92 23.12L2.28 29.72L9.08 28.12C11.104 29.256 13.44 29.92 16 29.92C23.732 29.92 30 23.652 30 15.92C30 12.172 28.528 8.636 25.968 6.076C23.408 3.516 19.872 2.044 16.044 2.044L16 2ZM16 4C19.444 4 22.668 5.344 25.028 7.704C27.388 10.064 28.732 13.288 28.732 16.732C28.732 22.648 23.916 27.464 16 27.464C13.76 27.464 11.588 26.848 9.712 25.688L9.28 25.44L5.52 26.4L6.52 22.76L6.24 22.28C4.984 20.336 4.32 18.096 4.32 15.776C4.32 9.86 9.136 5.044 15.052 5.044L16 4ZM10.8 9.2C10.56 9.2 10.16 9.28 9.84 9.64C9.52 10 8.64 10.84 8.64 12.56C8.64 14.28 9.88 15.92 10.08 16.2C10.28 16.48 12.8 20.48 16.88 22C20.32 23.28 20.96 23.04 21.64 22.96C22.32 22.88 23.76 22.08 24.08 21.24C24.4 20.4 24.4 19.68 24.32 19.52C24.24 19.36 23.96 19.28 23.56 19.08C23.16 18.88 21.44 18.04 21.08 17.92C20.72 17.8 20.48 17.76 20.2 18.16C19.92 18.56 19.28 19.36 19.04 19.64C18.8 19.92 18.56 19.96 18.16 19.76C17.76 19.56 16.48 19.12 14.96 17.76C13.76 16.68 12.96 15.36 12.72 14.96C12.48 14.56 12.68 14.36 12.88 14.16C13.08 13.96 13.28 13.64 13.48 13.4C13.68 13.16 13.76 13 13.88 12.76C14 12.52 13.92 12.28 13.84 12.08C13.76 11.88 12.96 10.16 12.64 9.36C12.32 8.6 12 8.68 11.76 8.68C11.52 8.68 11.24 8.68 10.96 8.68L10.8 9.2Z"
+                fill="white" />
+        </svg>
+        <span class="chat-badge" id="chatBadge" style="display: none;">1</span>
+    </button>
+    <div class="chat-window" id="chatWindow" style="display: none;">
+        <div class="chat-header">
+            <div>
+                <h4>💬 Chat Support</h4>
+                <p>Besoin d'aide ? Nous sommes là !</p>
+            </div>
+            <button onclick="toggleChatWidget()"
+                style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">×</button>
+        </div>
+        <div class="chat-body">
+            <div class="chat-message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <p>Bonjour ! Comment puis-je vous aider aujourd'hui ?</p>
+                    <span class="message-time">Maintenant</span>
+                </div>
+            </div>
+            <div class="chat-options">
+                <button class="chat-option-btn" onclick="selectChatOption('info')">
+                    ℹ️ Informations sur un restaurant
+                </button>
+                <button class="chat-option-btn" onclick="selectChatOption('reservation')">
+                    📅 Aide à la réservation
+                </button>
+                <button class="chat-option-btn" onclick="selectChatOption('modification')">
+                    ✏️ Modifier une réservation
+                </button>
+                <button class="chat-option-btn" onclick="selectChatOption('whatsapp')">
+                    💬 Parler avec un conseiller (WhatsApp)
+                </button>
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="Tapez votre message..." />
+            <button onclick="sendChatMessage()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2 10L18 2L14 18L10 12L2 10Z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>

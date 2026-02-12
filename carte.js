@@ -94,13 +94,76 @@ function highlightRestaurant(id) {
     const resto = restaurants.find(r => r.id === id);
     if (!resto) return;
 
-    map.setView([resto.lat, resto.lng], 13);
+    console.log('📍 Navigation vers:', resto.name);
 
-    markers.eachLayer(layer => {
-        if (layer.restoId === id) {
-            layer.openPopup();
-        }
+    // Visual feedback on list item
+    const listItems = document.querySelectorAll('.resto-list-item');
+    listItems.forEach(item => {
+        item.classList.remove('active-navigation');
     });
+
+    // Find and highlight the clicked item
+    const clickedItem = Array.from(listItems).find(item =>
+        item.querySelector('.resto-item-name')?.textContent === resto.name
+    );
+
+    if (clickedItem) {
+        clickedItem.classList.add('active-navigation');
+        // Remove class after animation
+        setTimeout(() => {
+            clickedItem.classList.remove('active-navigation');
+        }, 1500);
+    }
+
+    // Smooth animation to restaurant location with very close zoom
+    map.flyTo([resto.lat, resto.lng], 16, {
+        animate: true,
+        duration: 1.8,
+        easeLinearity: 0.25
+    });
+
+    // Open popup after animation starts
+    setTimeout(() => {
+        markers.eachLayer(layer => {
+            if (layer.restoId === id) {
+                layer.openPopup();
+
+                // Add strong temporary highlight effect
+                const element = layer.getElement();
+                if (element) {
+                    element.style.animation = 'pulse 0.6s ease-in-out 3';
+                    element.style.zIndex = '9999';
+
+                    // Reset z-index after animation
+                    setTimeout(() => {
+                        element.style.zIndex = '';
+                    }, 2000);
+                }
+            }
+        });
+    }, 1000);
+}
+
+// Expose globally
+window.highlightRestaurant = highlightRestaurant;
+
+// Add pulse animation for marker highlight
+if (!document.getElementById('marker-pulse-style')) {
+    const style = document.createElement('style');
+    style.id = 'marker-pulse-style';
+    style.textContent = `
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                filter: drop-shadow(0 0 0px rgba(254, 187, 2, 0));
+            }
+            50% { 
+                transform: scale(1.4); 
+                filter: drop-shadow(0 0 30px rgba(254, 187, 2, 1));
+            }
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // Add to itinerary
@@ -209,6 +272,62 @@ function clearRoute() {
     document.getElementById('routeInfo').classList.remove('active');
     document.getElementById('totalDistance').innerText = '0 km';
 }
+
+// Locate User
+let userMarker = null;
+window.locateUser = () => {
+    if (!navigator.geolocation) {
+        alert('La géolocalisation n\'est pas supportée par votre navigateur');
+        return;
+    }
+
+    const btn = document.querySelector('.locate-me-btn');
+    btn.innerHTML = '⌛';
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+
+            if (userMarker) map.removeLayer(userMarker);
+
+            userMarker = L.marker([latitude, longitude], {
+                icon: L.divIcon({
+                    className: 'user-location-marker',
+                    html: '<div class="pulse-marker"></div>',
+                    iconSize: [20, 20]
+                })
+            }).addTo(map);
+
+            map.flyTo([latitude, longitude], 15);
+            btn.innerHTML = '🎯';
+        },
+        (error) => {
+            console.error('Erreur de localisation:', error);
+            alert('Impossible de vous localiser. Vérifiez vos permissions.');
+            btn.innerHTML = '🎯';
+        }
+    );
+};
+
+// Add User Marker CSS
+const userMarkerStyle = document.createElement('style');
+userMarkerStyle.textContent = `
+    .pulse-marker {
+        width: 15px;
+        height: 15px;
+        background: #006ce4;
+        border: 3px solid white;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(0, 108, 228, 0.5);
+        animation: user-pulse 2s infinite;
+    }
+    @keyframes user-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(0, 108, 228, 0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(0, 108, 228, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(0, 108, 228, 0); }
+    }
+`;
+document.head.appendChild(userMarkerStyle);
 
 // Calculate distance between two points (Haversine formula)
 function calculateDistance(lat1, lon1, lat2, lon2) {

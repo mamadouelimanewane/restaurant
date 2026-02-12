@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Diagnostic - TerangaReserve</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            padding: 20px;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            color: #2c3e50;
+        }
+
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .test-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .test-result {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .success {
+            border-left: 4px solid #27ae60;
+            background: #d5f4e6;
+        }
+
+        .error {
+            border-left: 4px solid #e74c3c;
+            background: #fadbd8;
+        }
+
+        .warning {
+            border-left: 4px solid #f39c12;
+            background: #fdebd0;
+        }
+
+        .info {
+            border-left: 4px solid #3498db;
+            background: #d6eaf8;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        code {
+            background: #2c3e50;
+            color: #2ecc71;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Diagnostic TerangaReserve</h1>
+        <p class="subtitle">Vérification complète du fonctionnement du bouton "Découvrir l'établissement"</p>
+
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Cliquez sur "Lancer le Diagnostic Complet"</li>
+                <li>Lisez tous les résultats ci-dessous</li>
+                <li>Copiez le rapport et envoyez-le moi</li>
+            </ol>
+        </div>
+
+        <button class="btn-primary" onclick="runFullDiagnostic()">▶️ Lancer le Diagnostic Complet</button>
+        <button class="btn-success" onclick="testDirectly()">🧪 Test Direct</button>
+        <button class="btn-danger" onclick="clearResults()">🗑️ Effacer</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function runFullDiagnostic() {
+            clearResults();
+
+            log(`<div class="test-section">
+                <div class="test-title">🚀 DIAGNOSTIC DÉMARRÉ</div>
+                Date: ${new Date().toLocaleString('fr-FR')}<br>
+                URL de test: https://restaurant-lilac-rho.vercel.app
+            </div>`, 'info');
+
+            // Test 1: Charger l'URL
+            log(`<div class="test-section">
+                <div class="test-title">TEST 1: Chargement de l'URL</div>
+                <strong>Action:</strong> Testez d'abord manuellement les étapes ci-dessous<br><br>
+                <strong>Étapes:</strong><br>
+                1. Ouvrir un nouvel onglet<br>
+                2. Aller sur: <a href="https://restaurant-lilac-rho.vercel.app" target="_blank">https://restaurant-lilac-rho.vercel.app</a><br>
+                3. Ouvrir la console (F12)<br>
+                4. Vérifier que la page charge sans erreurs<br><br>
+                <strong>✅ Si ça charge:</strong> Passez au Test 2<br>
+                <strong>❌ Si erreur:</strong> Notez l'erreur
+            </div>`, 'warning');
+
+            // Test 2: Vérifier window.openBooking
+            log(`<div class="test-section">
+                <div class="test-title">TEST 2: Vérification de window.openBooking</div>
+                <strong>Action dans la console de l'application:</strong><br>
+                <code>typeof window.openBooking</code><br><br>
+                <strong>✅ Résultat attendu:</strong> "function"<br>
+                <strong>❌ Si "undefined":</strong> La fonction n'est pas exposée
+            </div>`, 'warning');
+
+            // Test 3: Vérifier les restaurants
+            log(`<div class="test-section">
+                <div class="test-title">TEST 3: Vérification des restaurants</div>
+                <strong>Action dans la console:</strong><br>
+                <code>document.querySelectorAll('.booking-card').length</code><br><br>
+                <strong>✅ Résultat attendu:</strong> 26 (ou moins si filtré)<br>
+                <strong>❌ Si 0:</strong> Les restaurants ne sont pas rendus
+            </div>`, 'warning');
+
+            // Test 4: Vérifier les boutons
+            log(`<div class="test-section">
+                <div class="test-title">TEST 4: Vérification des boutons</div>
+                <strong>Action dans la console:</strong><br>
+                <code>document.querySelectorAll('.see-availability').length</code><br><br>
+                <strong>✅ Résultat attendu:</strong> 26 (ou moins si filtré)<br>
+                <strong>❌ Si 0:</strong> Les boutons ne sont pas créés
+            </div>`, 'warning');
+
+            // Test 5: Inspecter un bouton
+            log(`<div class="test-section">
+                <div class="test-title">TEST 5: Inspection d'un bouton</div>
+                <strong>Action dans la console:</strong><br>
+                <code>document.querySelector('.see-availability').getAttribute('onclick')</code><br><br>
+                <strong>✅ Résultat attendu:</strong> "openBooking(1)" ou similaire<br>
+                <strong>❌ Si null:</strong> L'attribut onclick n'existe pas
+            </div>`, 'warning');
+
+            // Test 6: Tester openBooking directement
+            log(`<div class="test-section">
+                <div class="test-title">TEST 6: Test direct de openBooking</div>
+                <strong>Action dans la console:</strong><br>
+                <code>window.openBooking(1)</code><br><br>
+                <strong>✅ Si ça fonctionne:</strong> La modal doit s'ouvrir<br>
+                <strong>❌ Si erreur:</strong> Copier l'erreur complète
+            </div>`, 'warning');
+
+            // Test 7: Vérifier la modal
+            log(`<div class="test-section">
+                <div class="test-title">TEST 7: Vérification de la modal</div>
+                <strong>Action dans la console:</strong><br>
+                <code>document.getElementById('bookingModal')</code><br><br>
+                <strong>✅ Résultat attendu:</strong> Un élément HTML<br>
+                <strong>❌ Si null:</strong> La modal n'existe pas dans le DOM
+            </div>`, 'warning');
+
+            // Test 8: Vérifier les erreurs console
+            log(`<div class="test-section">
+                <div class="test-title">TEST 8: Erreurs Console</div>
+                <strong>Action:</strong><br>
+                1. Ouvrir la console (F12)<br>
+                2. Regarder s'il y a des erreurs en ROUGE<br>
+                3. Copier toutes les erreurs visibles<br><br>
+                <strong>⚠️ Cherchez particulièrement:</strong><br>
+                - "openBooking is not defined"<br>
+                - "Cannot read property of undefined"<br>
+                - Erreurs 404 (fichiers non trouvés)<br>
+                - Erreurs de chargement de modules
+            </div>`, 'warning');
+
+            // Test 9: Cache
+            log(`<div class="test-section">
+                <div class="test-title">TEST 9: Vérification du Cache</div>
+                <strong>Action:</strong><br>
+                1. Appuyer sur Ctrl + Shift + R (Windows) ou Cmd + Shift + R (Mac)<br>
+                2. OU ouvrir en mode navigation privée<br>
+                3. Retester le bouton<br><br>
+                <strong>✅ Si ça marche maintenant:</strong> C'était un problème de cache<br>
+                <strong>❌ Si ça ne marche toujours pas:</strong> Problème plus profond
+            </div>`, 'warning');
+
+            // Test 10: Version des fichiers
+            log(`<div class="test-section">
+                <div class="test-title">TEST 10: Version des Fichiers</div>
+                <strong>Action dans la console:</strong><br>
+                <code>performance.getEntriesByType('resource').filter(r => r.name.includes('app')).map(r => r.name)</code><br><br>
+                <strong>But:</strong> Voir quel fichier app-*.js est chargé<br>
+                <strong>⚠️ Note:</strong> Le hash doit être "app-CoF8H_I1.js" ou plus récent
+            </div>`, 'warning');
+
+            // Résumé
+            log(`<div class="test-section">
+                <div class="test-title">📊 RAPPORT À ENVOYER</div>
+                Après avoir fait tous les tests ci-dessus, envoyez-moi:<br><br>
+                1. Résultat du Test 2 (typeof window.openBooking)<br>
+                2. Résultat du Test 3 (nombre de cartes)<br>
+                3. Résultat du Test 4 (nombre de boutons)<br>
+                4. Résultat du Test 5 (attribut onclick)<br>
+                5. Toutes les erreurs du Test 8<br>
+                6. Résultat du Test 9 (cache vidé ?)<br>
+                7. Capture d'écran de la console après clic sur le bouton<br><br>
+                <strong>Avec ces informations, je pourrai identifier le problème exact!</strong>
+            </div>`, 'info');
+        }
+
+        function testDirectly() {
+            clearResults();
+
+            log(`<div class="test-section">
+                <div class="test-title">🧪 TEST DIRECT</div>
+                <strong>Instructions pour tester directement sur l'application:</strong><br><br>
+                1. Ouvrir <a href="https://restaurant-lilac-rho.vercel.app" target="_blank">https://restaurant-lilac-rho.vercel.app</a> dans un nouvel onglet<br>
+                2. Appuyer sur F12 pour ouvrir la console<br>
+                3. Copier-coller ce code dans la console:<br><br>
+                <textarea readonly style="width: 100%; height: 200px; font-family: monospace; padding: 10px; background: #2c3e50; color: #2ecc71; border: none; border-radius: 4px;">
+// Diagnostic rapide
+console.log('=== DIAGNOSTIC TERANGARESERVE ===');
+console.log('1. window.openBooking existe?', typeof window.openBooking);
+console.log('2. Nombre de cartes:', document.querySelectorAll('.booking-card').length);
+console.log('3. Nombre de boutons:', document.querySelectorAll('.see-availability').length);
+console.log('4. Premier bouton onclick:', document.querySelector('.see-availability')?.getAttribute('onclick'));
+console.log('5. Modal existe?', document.getElementById('bookingModal') !== null);
+
+// Tester openBooking directement
+if (typeof window.openBooking === 'function') {
+    console.log('6. Test de openBooking(1)...');
+    window.openBooking(1);
+} else {
+    console.error('❌ window.openBooking n\'existe pas!');
+}
+
+console.log('=== FIN DIAGNOSTIC ===');
+</textarea><br><br>
+                4. Appuyer sur Entrée<br>
+                5. Copier tout le résultat et me l'envoyer<br>
+            </div>`, 'info');
+        }
+
+        window.addEventListener('load', () => {
+            console.log('%c🔍 Diagnostic TerangaReserve', 'font-size: 20px; font-weight: bold; color: #e74c3c;');
+            console.log('%cCette page vous aide à diagnostiquer le problème du bouton.', 'font-size: 14px; color: #7f8c8d;');
+        });
+    </script>
+</body>
+
+</html>

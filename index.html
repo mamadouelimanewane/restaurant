@@ -5,21 +5,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TerangaReserve | La Crème des Restaurants au Sénégal</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description"
+        content="Découvrez et réservez les meilleurs restaurants du Sénégal. Programme de fidélité, avis vérifiés, géolocalisation.">
+    <meta name="theme-color" content="#003580">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TerangaReserve">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+
+    <!-- Preconnect pour les ressources externes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+
+    <!-- Preload des ressources critiques -->
+    <link rel="preload" href="/style.css" as="style">
+    <link rel="preload" href="/features.css" as="style">
+    <link rel="preload" href="/app.js" as="script">
+    <link rel="preload" href="/data.js" as="script">
+
+    <!-- Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="gallery.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/features.css">
+    <link rel="stylesheet" href="/chat.css">
+    <link rel="stylesheet" href="/responsive.css">
 </head>
 
 <body>
     <header class="hero">
         <div class="container nav-bar">
             <div class="logo">TerangaReserve.sn</div>
-            <div class="nav-links">
+            <button class="mobile-menu-toggle" aria-label="Menu" onclick="toggleMobileMenu()">☰</button>
+            <div class="nav-links" id="navLinks">
                 <a href="carte.html" style="text-decoration: none;"><button>🗺️ Cartographie</button></a>
+                <button onclick="openUserDashboard()">📊 Mon Dashboard</button>
                 <button onclick="openPassport()">🛂 Mon Passeport</button>
                 <button onclick="toggleOwnerDashboard()">Espace Restaurateur</button>
                 <button onclick="toggleMapView()">Carte</button>
@@ -109,6 +138,13 @@
                 <button class="concierge-btn" onclick="runConcierge()" style="width: 100%; margin-top: 10px;">Inspirer
                     moi</button>
                 <div id="conciergeResults" class="concierge-suggestions" style="display: none;"></div>
+                <div class="filter-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+                    <button class="see-availability" onclick="openAdvancedFilters()"
+                        style="width: 100%; height: auto; padding: 12px; background: white; color: #003580; border: 2px solid #003580; margin-bottom: 10px;">🔍
+                        Filtres Avancés</button>
+                    <button class="see-availability" onclick="resetFilters()"
+                        style="width: 100%; height: auto; padding: 12px; background: #f5f5f5; color: #666; border: none;">Réinitialiser</button>
+                </div>
             </div>
         </aside>
 
@@ -197,6 +233,18 @@
 
                 <!-- Step 0: Presentation -->
                 <div id="tab-presentation" class="tab-content active">
+                    <!-- Image Gallery Carousel -->
+                    <div class="resto-gallery">
+                        <button class="gallery-nav gallery-prev" onclick="scrollGallery(-1)"
+                            style="display:none">‹</button>
+                        <div class="gallery-container" id="restoGallery">
+                            <!-- Images dynamically filled -->
+                        </div>
+                        <button class="gallery-nav gallery-next" onclick="scrollGallery(1)"
+                            style="display:none">›</button>
+                        <div class="gallery-dots" id="galleryDots"></div>
+                    </div>
+
                     <div id="presentationContent">
                         <!-- Dynamically filled -->
                     </div>
@@ -206,21 +254,56 @@
 
                 <!-- Step 1: Booking Details -->
                 <div id="tab-booking" class="tab-content">
-                    <img id="tablePreview" src="" class="table-preview" alt="Prévisualisation de la table">
+                    <div class="table-preview-wrapper">
+                        <img id="tablePreview" src="" class="table-preview" alt="Prévisualisation de la table">
+                        <div class="preview-label">Prévisualisation de la table</div>
+                    </div>
                     <form id="bookingForm">
                         <div class="form-row">
-                            <div class="form-group"><label>Date</label><input type="date" id="bookingDate" required>
+                            <div class="form-group">
+                                <label><span class="label-icon">📅</span> Date de réservation</label>
+                                <input type="date" id="bookingDate" class="enhanced-input" required>
                             </div>
-                            <div class="form-group"><label>Heure</label><input type="time" id="bookingTime" required
-                                    value="20:00"></div>
+                            <div class="form-group">
+                                <label><span class="label-icon">🕐</span> Heure d'arrivée</label>
+                                <input type="time" id="bookingTime" class="enhanced-input" required value="20:00">
+                            </div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group"><label>Convives</label><input type="number" id="guestCount"
-                                    value="2" min="1"></div>
-                            <div class="form-group"><label>Téléphone</label><input type="tel" id="phoneInput"
-                                    placeholder="+221 ..." required></div>
+                            <div class="form-group">
+                                <label><span class="label-icon">👥</span> Nombre de convives</label>
+                                <input type="number" id="guestCount" class="enhanced-input" value="2" min="1" max="20">
+                            </div>
+                            <div class="form-group">
+                                <label><span class="label-icon">📱</span> Téléphone (WhatsApp)</label>
+                                <input type="tel" id="phoneInput" class="enhanced-input" placeholder="+221 77 123 45 67"
+                                    required pattern="[+0-9 ]+">
+                            </div>
                         </div>
-                        <button type="submit" class="reserve-btn">Continuer vers l'Acompte</button>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><span class="label-icon">📧</span> Email (optionnel)</label>
+                                <input type="email" id="emailInput" class="enhanced-input"
+                                    placeholder="votre@email.com">
+                            </div>
+                        </div>
+                        <div class="notification-options"
+                            style="margin: 1rem 0; padding: 1rem; background: #f0f7ff; border-radius: 8px;">
+                            <p style="font-weight: 600; margin-bottom: 0.75rem; color: #003580;">🔔 Notifications de
+                                confirmation :</p>
+                            <label
+                                style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0.5rem;">
+                                <input type="checkbox" id="smsNotification" checked
+                                    style="width: auto; accent-color: #003580;">
+                                <span>📱 Recevoir un SMS de confirmation</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="emailNotification"
+                                    style="width: auto; accent-color: #003580;">
+                                <span>📧 Recevoir un email récapitulatif</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="reserve-btn">Continuer vers l'Acompte →</button>
                     </form>
                 </div>
 
@@ -279,14 +362,41 @@
         <div id="successView" style="display: none;" class="success-msg">
             <div class="success-icon">✓</div>
             <h2>Réservation Confirmée !</h2>
-            <p>Acompte payé. Un SMS de confirmation a été envoyé.</p>
+            <p id="successMainMessage">Acompte payé avec succès.</p>
+            <div id="notificationStatus"
+                style="margin: 1.5rem 0; padding: 1rem; background: #e8f5e9; border-radius: 8px; text-align: left;">
+                <p style="font-weight: 600; margin-bottom: 0.5rem; color: #2e7d32;">🔔 Notifications envoyées :</p>
+                <div id="smsStatus" style="display: none; padding: 0.5rem 0;">✅ SMS de confirmation envoyé</div>
+                <div id="emailStatus" style="display: none; padding: 0.5rem 0;">✅ Email récapitulatif envoyé</div>
+            </div>
+            <div
+                style="margin: 1.5rem 0; padding: 1.5rem; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); border-radius: 12px; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);">
+                <p style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.75rem; color: #000;">🎁 Programme
+                    Teranga Rewards</p>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+                    <div style="font-size: 2rem;">+50</div>
+                    <div style="text-align: left;">
+                        <div style="font-weight: 600; color: #333;">Points gagnés !</div>
+                        <div style="font-size: 0.85rem; color: #666;">Cumulables pour des réductions</div>
+                    </div>
+                </div>
+                <div
+                    style="background: rgba(255,255,255,0.7); padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">
+                    💡 <strong>100 points = 5.000 FCFA</strong> de réduction sur votre prochaine réservation
+                </div>
+            </div>
             <div id="bookingSummary"
                 style="margin: 20px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; text-align: left;">
             </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="see-availability" onclick="generatePDF()" style="background: #e74c3c; flex: 1;">📄
-                    Télécharger Facture</button>
-                <button class="see-availability" onclick="closeModal()" style="flex: 1;">Fermer</button>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="see-availability" onclick="generatePDF()"
+                    style="background: #e74c3c; flex: 1; min-width: 140px;">📄 Facture PDF</button>
+                <button class="see-availability" id="btnBookTransportSuccess"
+                    style="background: #27ae60; flex: 1; min-width: 140px;">🚕 Yango/Wave</button>
+                <button class="see-availability" onclick="openReferralModal()"
+                    style="background: #febb02; color: #003580; flex: 1; min-width: 140px;">🎁 Parrainer</button>
+                <button class="see-availability" onclick="closeModal()"
+                    style="background: #666; flex: 1; min-width: 140px;">Fermer</button>
             </div>
         </div>
     </div>
@@ -621,7 +731,134 @@
         </div>
     </div>
 
+    <!-- Chat Widget -->
+    <div id="chatWidget" class="chat-widget">
+        <button class="chat-bubble" onclick="toggleChatWidget()">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <path
+                    d="M16 2C8.268 2 2 8.268 2 16C2 18.568 2.688 21.016 3.92 23.12L2.28 29.72L9.08 28.12C11.104 29.256 13.44 29.92 16 29.92C23.732 29.92 30 23.652 30 15.92C30 12.172 28.528 8.636 25.968 6.076C23.408 3.516 19.872 2.044 16.044 2.044L16 2ZM16 4C19.444 4 22.668 5.344 25.028 7.704C27.388 10.064 28.732 13.288 28.732 16.732C28.732 22.648 23.916 27.464 16 27.464C13.76 27.464 11.588 26.848 9.712 25.688L9.28 25.44L5.52 26.4L6.52 22.76L6.24 22.28C4.984 20.336 4.32 18.096 4.32 15.776C4.32 9.86 9.136 5.044 15.052 5.044L16 4ZM10.8 9.2C10.56 9.2 10.16 9.28 9.84 9.64C9.52 10 8.64 10.84 8.64 12.56C8.64 14.28 9.88 15.92 10.08 16.2C10.28 16.48 12.8 20.48 16.88 22C20.32 23.28 20.96 23.04 21.64 22.96C22.32 22.88 23.76 22.08 24.08 21.24C24.4 20.4 24.4 19.68 24.32 19.52C24.24 19.36 23.96 19.28 23.56 19.08C23.16 18.88 21.44 18.04 21.08 17.92C20.72 17.8 20.48 17.76 20.2 18.16C19.92 18.56 19.28 19.36 19.04 19.64C18.8 19.92 18.56 19.96 18.16 19.76C17.76 19.56 16.48 19.12 14.96 17.76C13.76 16.68 12.96 15.36 12.72 14.96C12.48 14.56 12.68 14.36 12.88 14.16C13.08 13.96 13.28 13.64 13.48 13.4C13.68 13.16 13.76 13 13.88 12.76C14 12.52 13.92 12.28 13.84 12.08C13.76 11.88 12.96 10.16 12.64 9.36C12.32 8.6 12 8.68 11.76 8.68C11.52 8.68 11.24 8.68 10.96 8.68L10.8 9.2Z"
+                    fill="white" />
+            </svg>
+            <span class="chat-badge" id="chatBadge" style="display: none;">1</span>
+        </button>
+        <div class="chat-window" id="chatWindow" style="display: none;">
+            <div class="chat-header">
+                <div>
+                    <h4>💬 Chat Support</h4>
+                    <p>Besoin d'aide ? Nous sommes là !</p>
+                </div>
+                <button onclick="toggleChatWidget()"
+                    style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">×</button>
+            </div>
+            <div class="chat-body">
+                <div class="chat-message bot">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <p>Bonjour ! Comment puis-je vous aider aujourd'hui ?</p>
+                        <span class="message-time">Maintenant</span>
+                    </div>
+                </div>
+                <div class="chat-options">
+                    <button class="chat-option-btn" onclick="selectChatOption('info')">
+                        ℹ️ Informations sur un restaurant
+                    </button>
+                    <button class="chat-option-btn" onclick="selectChatOption('reservation')">
+                        📅 Aide à la réservation
+                    </button>
+                    <button class="chat-option-btn" onclick="selectChatOption('modification')">
+                        ✏️ Modifier une réservation
+                    </button>
+                    <button class="chat-option-btn" onclick="selectChatOption('whatsapp')">
+                        💬 Parler avec un conseiller (WhatsApp)
+                    </button>
+                </div>
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="Tapez votre message..." />
+                <button onclick="sendChatMessage()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 10L18 2L14 18L10 12L2 10Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts critiques - chargés immédiatement -->
     <script type="module" src="/app.js"></script>
+    <script type="module" src="/data.js"></script>
+    <script type="module" src="/notifications.js"></script>
+    <script type="module" src="/chat.js"></script>
+
+    <!-- Scripts non-critiques - chargés avec defer -->
+    <script type="module" defer src="/pwa.js"></script>
+    <script type="module" defer src="/backend-sync.js"></script>
+
+    <!-- Scripts de fonctionnalités - chargés à la demande -->
+    <script type="module">
+        // Lazy loading des fonctionnalités non critiques
+        window.addEventListener('load', () => {
+            // Charger après 2 secondes
+            setTimeout(() => {
+                import('/reviews.js');
+                import('/dashboard.js');
+            }, 2000);
+
+            // Charger après 4 secondes
+            setTimeout(() => {
+                import('/gamification.js');
+                import('/referral.js');
+                import('/advanced-search.js');
+                import('/transport.js');
+                import('/payment-wave.js');
+            }, 4000);
+        });
+    </script>
+
+    <!-- Injection du Chat Widget -->
+    <script>
+        fetch('/chat-widget.html')
+            .then(response => response.text())
+            .then(html => {
+                const div = document.createElement('div');
+                div.innerHTML = html;
+                document.body.appendChild(div.firstElementChild);
+            });
+    </script>
+    <!-- Bottom Navigation (Mobile Only) -->
+    <nav class="mobile-bottom-nav">
+        <button class="nav-item active" onclick="location.href='/'">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Explorer</span>
+        </button>
+        <button class="nav-item" onclick="location.href='/carte.html'">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-label">Carte</span>
+        </button>
+        <button class="nav-item concierge-item" onclick="toggleChat()">
+            <div class="concierge-circle">🤖</div>
+            <span class="nav-label">Concierge</span>
+        </button>
+        <button class="nav-item" onclick="openPassport()">
+            <span class="nav-icon">🛂</span>
+            <span class="nav-label">Passeport</span>
+        </button>
+        <button class="nav-item" onclick="openUserDashboard()">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">Profil</span>
+        </button>
+    </nav>
+
+    <script>
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+
+            const btn = document.querySelector('.mobile-menu-toggle');
+            btn.innerHTML = navLinks.classList.contains('active') ? '✕' : '☰';
+        }
+    </script>
 </body>
 
 </html>
