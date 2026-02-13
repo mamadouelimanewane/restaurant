@@ -798,8 +798,11 @@
     <script type="module" src="/payment-wave.js"></script>
     <script type="module" src="/referral.js"></script>
     <script type="module" src="/gallery-logic.js"></script>
+    <!-- IA Intelligente -->
+    <script type="module" src="/chat.js"></script>
+    <script type="module" src="/concierge-ai.js"></script>
 
-    <!-- Injection du Chat Widget -->
+    <!-- Injection du Chat Widget (HTML Structure Only) -->
     <script>
         fetch('/chat-widget.html')
             .then(response => response.text())
@@ -807,7 +810,13 @@
                 const div = document.createElement('div');
                 div.innerHTML = html;
                 if (div.firstElementChild) {
+                    // Remove existing scripts in the fetched HTML to avoid conflicts
+                    const scripts = div.querySelectorAll('script');
+                    scripts.forEach(s => s.remove());
                     document.body.appendChild(div.firstElementChild);
+
+                    // Init Chatbot after DOM injection
+                    if (window.initChatbot) window.initChatbot();
                 }
             });
     </script>
