@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="chat.css">
     <link rel="stylesheet" href="features.css">
     <link rel="stylesheet" href="advanced-features.css">
+    <link rel="stylesheet" href="responsive.css">
     <link rel="preload" href="/app.js" as="script">
     <link rel="preload" href="/data.js" as="script">
 
@@ -846,13 +847,37 @@
 
     <script>
         // Mobile Menu Toggle
+        // Mobile Menu Toggle
         function toggleMobileMenu() {
             const navLinks = document.getElementById('navLinks');
-            navLinks.classList.toggle('active');
-
             const btn = document.querySelector('.mobile-menu-toggle');
+
+            navLinks.classList.toggle('active');
             btn.innerHTML = navLinks.classList.contains('active') ? '✕' : '☰';
         }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-toggle');
+
+            if (navLinks.classList.contains('active') &&
+                !navLinks.contains(e.target) &&
+                !btn.contains(e.target)) {
+                navLinks.classList.remove('active');
+                btn.innerHTML = '☰';
+            }
+        });
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-links button, .nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                const navLinks = document.getElementById('navLinks');
+                const btn = document.querySelector('.mobile-menu-toggle');
+                navLinks.classList.remove('active');
+                btn.innerHTML = '☰';
+            });
+        });
     </script>
 </body>
 
