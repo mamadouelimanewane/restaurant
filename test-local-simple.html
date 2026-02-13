@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Bouton - Version Locale</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #e74c3c;
+        }
+
+        button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            background: #c0392b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .success {
+            color: #27ae60;
+            font-size: 48px;
+        }
+
+        .log {
+            background: #2c3e50;
+            color: #2ecc71;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin-top: 20px;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .test-info {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>🧪 Test Local du Bouton</h1>
+        <div class="test-info">
+            <strong>Version:</strong> 2.3.0 - Triple Fallback<br>
+            <strong>But:</strong> Vérifier que le code fonctionne localement
+        </div>
+
+        <h2>Restaurant Test</h2>
+        <p><strong>Le Lagon 1</strong> - Plateau, Dakar</p>
+        <p>Fruits de Mer / Gastronomique</p>
+
+        <!-- TEST 1: onclick inline -->
+        <button onclick="window.openBooking(1)">
+            Test 1: onclick inline
+        </button>
+
+        <!-- TEST 2: data-attribute avec event listener -->
+        <button class="see-availability" data-restaurant-id="1">
+            Test 2: Event Listener
+        </button>
+
+        <!-- TEST 3: Combinaison (comme dans l'app) -->
+        <button class="see-availability-combo" data-restaurant-id="1" onclick="window.openBooking(1)">
+            Test 3: Combo (comme app réelle)
+        </button>
+
+        <div id="logs" class="log"></div>
+    </div>
+
+    <!-- Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="success">✅</div>
+            <h2>SUCCÈS!</h2>
+            <p>Le bouton fonctionne correctement!</p>
+            <p id="modalInfo"></p>
+            <button onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        // Logs
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db';
+            logsDiv.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            console.log(message);
+        }
+
+        // Fonction openBooking (comme dans l'app)
+        function openBooking(id) {
+            log('🎯 openBooking called with ID: ' + id, 'success');
+
+            const modal = document.getElementById('bookingModal');
+            const modalInfo = document.getElementById('modalInfo');
+
+            if (modal) {
+                modalInfo.innerText = `Restaurant ID: ${id}`;
+                modal.classList.add('active');
+                log('✅ Modal opened successfully', 'success');
+            } else {
+                log('❌ Modal element not found!', 'error');
+            }
+        }
+
+        // Exposer au scope global
+        window.openBooking = openBooking;
+        log('✅ window.openBooking exposed', 'success');
+
+        // Fonction closeModal
+        function closeModal() {
+            const modal = document.getElementById('bookingModal');
+            if (modal) {
+                modal.classList.remove('active');
+                log('Modal closed', 'info');
+            }
+        }
+        window.closeModal = closeModal;
+
+        // Event listener pour Test 2
+        document.addEventListener('DOMContentLoaded', function () {
+            log('✅ DOM loaded', 'success');
+
+            // Méthode 2: Event listener direct
+            const btn2 = document.querySelector('.see-availability');
+            if (btn2) {
+                btn2.addEventListener('click', function () {
+                    const id = parseInt(this.getAttribute('data-restaurant-id'), 10);
+                    log('🎯 Event listener: Button clicked! ID: ' + id, 'success');
+                    openBooking(id);
+                });
+                log('✅ Event listener attached to Test 2', 'success');
+            }
+
+            // Méthode 3: Event listener sur combo (backup)
+            const btn3 = document.querySelector('.see-availability-combo');
+            if (btn3) {
+                btn3.addEventListener('click', function (e) {
+                    const id = parseInt(this.getAttribute('data-restaurant-id'), 10);
+                    log('🎯 Combo listener: Button clicked! ID: ' + id, 'success');
+                    // onclick déjà appelé, pas besoin de rappeler openBooking
+                });
+                log('✅ Event listener attached to Test 3', 'success');
+            }
+
+            log('═══════════════════════════════════', 'info');
+            log('🧪 TESTS PRÊTS - Cliquez sur les boutons!', 'info');
+            log('═══════════════════════════════════', 'info');
+        });
+    </script>
+</body>
+
+</html>

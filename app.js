@@ -5,6 +5,18 @@ import Chart from 'chart.js/auto';
 import { jsPDF } from 'jspdf';
 import './style.css';
 import './admin.css';
+import './gallery.css';
+import './features.css';
+import './chat.css';
+import './responsive.css';
+import './responsive-map.css';
+
+// 🌍 EXPOSITION GLOBALE (Fix ReferenceError)
+window.restaurants = restaurants;
+
+// Core features
+import './chat.js';
+import './notifications.js';
 
 // Safe state management
 let bookings = [];
@@ -159,26 +171,38 @@ function renderRestaurants(items) {
                     <div class="card-pricing" style="font-size: 0.8rem; color: #d4111e; font-weight: 700;">
                         Acompte: ${(resto.avgPrice * 0.2).toLocaleString()} FCFA / convive
                     </div>
+                    
+                    <div class="card-actions-row" style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="action-card-mini" onclick="window.openTransportModal(${resto.id})" style="padding: 6px 10px; font-size: 0.75rem; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer;">🚗 Transport</button>
+                        <button class="action-card-mini" onclick="window.openGallery(${resto.id})" style="padding: 6px 10px; font-size: 0.75rem; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer;">📸 Galerie</button>
+                        <button class="action-card-mini" onclick="window.openGoogleMaps(${resto.id})" style="padding: 6px 10px; font-size: 0.75rem; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer;">🧭 Itinéraire</button>
+                    </div>
                 </div>
                 <div class="card-right-panel">
                     <div class="rating-container">
                         <div class="rating-text">${ratingText}</div>
                         <div class="rating-score">${resto.rating}</div>
                     </div>
-                    <button class="see-availability" data-restaurant-id="${resto.id}">Découvrir l'établissement</button>
+                    <button class="see-availability" data-restaurant-id="${resto.id}" onclick="window.openBooking(${resto.id})">Réserver une table</button>
                 </div>
             </div>
         </div>`;
     }).join('');
 
-    // ✨ Event delegation for all "Découvrir l'établissement" buttons
-    // This eliminates scope issues with onclick attributes
+    // ✨ TRIPLE FALLBACK pour garantir que les boutons fonctionnent
+    // Méthode 1: Event delegation (moderne)
+    // Méthode 2: onclick inline (fallback)
+    // Méthode 3: Direct addEventListener sur chaque bouton
     setTimeout(() => {
         attachRestaurantButtonListeners();
+        attachDirectButtonListeners();
     }, 100);
 }
 
-// Event delegation for restaurant buttons
+// Flag global pour éviter les duplications
+let listenersAttached = false;
+
+// Event delegation pour les boutons restaurant (Méthode 1)
 function attachRestaurantButtonListeners() {
     const listingGrid = document.getElementById('dynamicListingGrid');
     if (!listingGrid) {
@@ -186,18 +210,19 @@ function attachRestaurantButtonListeners() {
         return;
     }
 
-    // Remove old listeners if any
-    const oldClone = listingGrid.cloneNode(true);
-    listingGrid.parentNode.replaceChild(oldClone, listingGrid);
+    // N'ajouter qu'une seule fois
+    if (listenersAttached) {
+        console.log('⚠️ Listeners already attached, skipping');
+        return;
+    }
 
-    // Add new listener with event delegation
-    const newGrid = document.getElementById('dynamicListingGrid');
-    newGrid.addEventListener('click', function (event) {
+    // Event delegation sur le parent
+    listingGrid.addEventListener('click', function (event) {
         const button = event.target.closest('.see-availability');
         if (button) {
             event.preventDefault();
             const restaurantId = parseInt(button.getAttribute('data-restaurant-id'), 10);
-            console.log('🎯 Button clicked! Restaurant ID:', restaurantId);
+            console.log('🎯 Event delegation: Button clicked! Restaurant ID:', restaurantId);
             if (restaurantId) {
                 openBooking(restaurantId);
             } else {
@@ -206,7 +231,33 @@ function attachRestaurantButtonListeners() {
         }
     });
 
-    console.log('✅ Restaurant button listeners attached');
+    listenersAttached = true;
+    console.log('✅ Event delegation attached');
+}
+window.renderRestaurants = renderRestaurants;
+
+// Direct listeners sur chaque bouton (Méthode 3 - Maximum reliability)
+function attachDirectButtonListeners() {
+    const buttons = document.querySelectorAll('.see-availability');
+    console.log(`🔧 Attaching direct listeners to ${buttons.length} buttons`);
+
+    buttons.forEach(button => {
+        // Retirer les anciens listeners si existants
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+
+        // Ajouter le nouveau listener
+        newButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            const restaurantId = parseInt(this.getAttribute('data-restaurant-id'), 10);
+            console.log('🎯 Direct listener: Button clicked! Restaurant ID:', restaurantId);
+            if (restaurantId) {
+                openBooking(restaurantId);
+            }
+        });
+    });
+
+    console.log('✅ Direct listeners attached to all buttons');
 }
 
 function filterRestaurants() {
@@ -289,6 +340,27 @@ function openBooking(id) {
 }
 // Expose to global scope for inline onclick handlers
 window.openBooking = openBooking;
+
+// 🚑 AUTO-RÉPARATEUR (Healer Loop)
+// Ce script tourne en boucle pour s'assurer que les boutons fonctionnent 
+// même si le DOM est modifié ou si un autre script interfère.
+setInterval(() => {
+    const buttons = document.querySelectorAll('.see-availability');
+    buttons.forEach(btn => {
+        const id = btn.getAttribute('data-restaurant-id');
+        if (id && !btn.hasAttribute('data-attached')) {
+            // Force l'attribut onclick
+            btn.setAttribute('onclick', `window.openBooking(${id})`);
+            // Ajoute un listener direct en plus
+            btn.onclick = (e) => {
+                e.preventDefault();
+                window.openBooking(parseInt(id));
+            };
+            btn.setAttribute('data-attached', 'true');
+            console.log(`🚑 Bouton auto-réparé pour le resto ID: ${id}`);
+        }
+    });
+}, 1000);
 
 function switchModalTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${tabId}'`)));
@@ -1074,6 +1146,23 @@ function initTeranga() {
     console.log("Teranga: Initializing plateforme...");
     try {
         renderRestaurants(restaurants);
+
+        // ✨ LAZY LOADING DES MODULES (Vite optimized)
+        // On charge les fonctionnalités secondaires après le rendu initial
+        setTimeout(() => {
+            console.log("Teranga: Lazy loading features...");
+            import('./reviews.js');
+            import('./dashboard.js');
+        }, 2000);
+
+        setTimeout(() => {
+            import('./gamification.js');
+            import('./referral.js');
+            import('./advanced-search.js');
+            import('./transport.js');
+            import('./payment-wave.js');
+        }, 4000);
+
     } catch (err) {
         console.error("Teranga: Error during init:", err);
     }

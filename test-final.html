@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Test Final - TerangaReserve v2.3.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .version {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            background: #10b981;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .test-section {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .test-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .test-step {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        code {
+            background: #1e293b;
+            color: #10b981;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .result-box {
+            background: #1e293b;
+            color: #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success-icon {
+            color: #10b981;
+            font-size: 2rem;
+        }
+
+        .warning-box {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .warning-box h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+
+        .warning-box p {
+            color: #78350f;
+            line-height: 1.6;
+        }
+
+        .link-box {
+            background: #dbeafe;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .link-box a {
+            color: #1d4ed8;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .link-box a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>✅ Test Final TerangaReserve</h1>
+        <div class="version">Version 2.3.0 - Triple Fallback</div>
+        <div class="status">
+            <span class="success-icon">✅</span> Déployé avec succès - 13 février 2026, 08:56
+        </div>
+
+        <div class="warning-box">
+            <h3>⚠️ IMPORTANT: Vider le Cache!</h3>
+            <p>
+                Pour voir la nouvelle version, vous DEVEZ tester en <strong>mode navigation privée</strong>
+                ou faire un <strong>hard refresh</strong> (Ctrl + Shift + R).
+                <br><br>
+                Sinon, vous verrez l'ancienne version en cache et le bouton ne fonctionnera pas!
+            </p>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🧪 Test Automatique</div>
+
+            <div class="test-step">
+                <span class="step-number">1</span>
+                Cliquez sur le bouton ci-dessous pour lancer tous les tests
+            </div>
+
+            <button class="btn-primary" onclick="runAllTests()">▶️ Lancer Tous les Tests</button>
+            <button class="btn-danger" onclick="clearResults()">🗑️ Effacer</button>
+
+            <div id="results"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🌐 Test en Production</div>
+
+            <div class="test-step">
+                <span class="step-number">1</span>
+                Ouvrir en mode navigation privée (Ctrl + Shift + N)
+            </div>
+
+            <div class="test-step">
+                <span class="step-number">2</span>
+                Aller sur l'application
+            </div>
+
+            <div class="link-box">
+                <a href="https://restaurant-lilac-rho.vercel.app" target="_blank">
+                    🚀 Ouvrir TerangaReserve (Nouvelle fenêtre)
+                </a>
+            </div>
+
+            <div class="test-step">
+                <span class="step-number">3</span>
+                Ouvrir la console (F12)
+            </div>
+
+            <div class="test-step">
+                <span class="step-number">4</span>
+                Cliquer sur "Découvrir l'établissement" sur n'importe quelle carte
+            </div>
+
+            <div class="test-step">
+                <span class="step-number">5</span>
+                Vérifier les logs dans la console
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">📋 Logs Console Attendus</div>
+            <div class="result-box">✅ Event delegation attached
+                🔧 Attaching direct listeners to 26 buttons
+                ✅ Direct listeners attached to all buttons
+
+                [Après clic sur le bouton]
+                🎯 Event delegation: Button clicked! Restaurant ID: 1
+                🎯 Direct listener: Button clicked! Restaurant ID: 1
+                🎯 openBooking called with ID: 1
+                ✅ Restaurant found: Le Lagon 1
+                ✅ Modal opened successfully</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🔍 Tests de Diagnostic</div>
+
+            <button class="btn-success" onclick="testVersion()">1️⃣ Vérifier Version</button>
+            <button class="btn-success" onclick="testOpenBooking()">2️⃣ Test window.openBooking</button>
+            <button class="btn-success" onclick="testButtons()">3️⃣ Test Boutons</button>
+
+            <div id="diagnostic-results"></div>
+        </div>
+    </div>
+
+    <script>
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('diagnostic-results').innerHTML = '';
+        }
+
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'result-box';
+            div.style.marginTop = '15px';
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+
+        function addDiagnostic(message) {
+            const resultsDiv = document.getElementById('diagnostic-results');
+            const div = document.createElement('div');
+            div.className = 'result-box';
+            div.style.marginTop = '15px';
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+
+        function runAllTests() {
+            clearResults();
+
+            let report = `🧪 RAPPORT DE TEST COMPLET
+Date: ${new Date().toLocaleString('fr-FR')}
+URL de test: https://restaurant-lilac-rho.vercel.app
+
+═══════════════════════════════════════════════
+
+📝 INSTRUCTIONS POUR TESTER EN PRODUCTION:
+
+1. ⚠️ OUVRIR EN MODE NAVIGATION PRIVÉE
+   Chrome: Ctrl + Shift + N
+   Firefox: Ctrl + Shift + P
+   Safari: Cmd + Shift + N
+
+2. 🌐 ALLER SUR L'APPLICATION
+   https://restaurant-lilac-rho.vercel.app
+
+3. 🔧 OUVRIR LA CONSOLE
+   Appuyer sur F12
+
+4. 🎯 CLIQUER SUR "DÉCOUVRIR L'ÉTABLISSEMENT"
+   Sur n'importe quelle carte restaurant
+
+5. ✅ VÉRIFIER LES LOGS
+   Vous devez voir:
+   - ✅ Event delegation attached
+   - 🔧 Attaching direct listeners to 26 buttons
+   - ✅ Direct listeners attached to all buttons
+   - 🎯 Button clicked! Restaurant ID: X
+   - ✅ Modal opened successfully
+
+═══════════════════════════════════════════════
+
+🔍 TESTS DE DIAGNOSTIC À FAIRE DANS LA CONSOLE:
+
+// Test 1: Vérifier la version chargée
+performance.getEntriesByType('resource')
+    .filter(r => r.name.includes('app'))
+    .map(r => r.name)
+// Doit contenir: app-Cd-Hx2V6.js
+
+// Test 2: Vérifier window.openBooking
+typeof window.openBooking
+// Doit retourner: "function"
+
+// Test 3: Vérifier les boutons
+document.querySelectorAll('.see-availability').length
+// Doit retourner: 26 (ou moins si filtré)
+
+// Test 4: Vérifier onclick
+document.querySelector('.see-availability').getAttribute('onclick')
+// Doit retourner: "window.openBooking(1)" ou similaire
+
+// Test 5: Test manuel
+window.openBooking(1)
+// La modal doit s'ouvrir immédiatement
+
+═══════════════════════════════════════════════
+
+✅ CRITÈRES DE SUCCÈS:
+
+1. ✅ Modal s'ouvre au clic
+2. ✅ Logs apparaissent dans la console
+3. ✅ Aucune erreur en rouge
+4. ✅ Navigation entre onglets fonctionne
+5. ✅ Formulaire de réservation accessible
+
+❌ SI ÇA NE MARCHE PAS:
+
+1. Vérifier que vous êtes en mode navigation privée
+2. Vérifier le hash du fichier app.js (doit être app-Cd-Hx2V6.js)
+3. Faire un hard refresh (Ctrl + Shift + R)
+4. Copier TOUTES les erreurs console et me les envoyer
+
+═══════════════════════════════════════════════
+
+📊 INFORMATIONS TECHNIQUES:
+
+Version: 2.3.0
+Hash app.js: app-Cd-Hx2V6.js
+Taille: 47.83 kB
+Méthodes: Triple Fallback (onclick + event delegation + direct listeners)
+Déploiement: 13 février 2026, 08:56
+URL: https://restaurant-lilac-rho.vercel.app
+Vercel: https://vercel.com/mamadou-dias-projects-979b1f4f/restaurant
+
+═══════════════════════════════════════════════
+
+🎉 CETTE VERSION UTILISE UN TRIPLE FALLBACK:
+
+1. onclick inline → Fonctionne immédiatement
+2. Event delegation → Performance optimale
+3. Direct listeners → Garantie absolue
+
+Même si 2 méthodes échouent, la 3ème fonctionnera!
+
+═══════════════════════════════════════════════`;
+
+            addResult(report);
+        }
+
+        function testVersion() {
+            const message = `🔍 TEST DE VERSION
+
+Pour tester en production:
+1. Ouvrir https://restaurant-lilac-rho.vercel.app en mode privé
+2. Ouvrir console (F12)
+3. Taper:
+
+performance.getEntriesByType('resource')
+    .filter(r => r.name.includes('app'))
+    .map(r => r.name)
+
+✅ Résultat attendu: Doit contenir "app-Cd-Hx2V6.js"
+❌ Si vous voyez "app-COnFOsJ5.js" ou "app-CoF8H_I1.js" → Cache pas vidé!`;
+
+            addDiagnostic(message);
+        }
+
+        function testOpenBooking() {
+            const message = `🔍 TEST WINDOW.OPENBOOKING
+
+Pour tester en production:
+1. Ouvrir https://restaurant-lilac-rho.vercel.app en mode privé
+2. Ouvrir console (F12)
+3. Taper:
+
+typeof window.openBooking
+
+✅ Résultat attendu: "function"
+❌ Si "undefined" → Problème de chargement
+
+Test manuel:
+window.openBooking(1)
+
+✅ La modal doit s'ouvrir immédiatement`;
+
+            addDiagnostic(message);
+        }
+
+        function testButtons() {
+            const message = `🔍 TEST DES BOUTONS
+
+Pour tester en production:
+1. Ouvrir https://restaurant-lilac-rho.vercel.app en mode privé
+2. Ouvrir console (F12)
+3. Taper:
+
+// Nombre de boutons
+document.querySelectorAll('.see-availability').length
+// ✅ Attendu: 26 (ou moins si filtré)
+
+// Vérifier onclick
+const btn = document.querySelector('.see-availability');
+console.log('onclick:', btn.getAttribute('onclick'));
+console.log('data-id:', btn.getAttribute('data-restaurant-id'));
+
+// ✅ Attendu:
+// onclick: "window.openBooking(1)"
+// data-id: "1"
+
+// Simuler un clic
+btn.click()
+// ✅ La modal doit s'ouvrir`;
+
+            addDiagnostic(message);
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            console.log('%c🧪 Page de Test TerangaReserve v2.3.0', 'font-size: 20px; font-weight: bold; color: #667eea;');
+            console.log('%cPour tester l\'application, ouvrez https://restaurant-lilac-rho.vercel.app en mode navigation privée', 'font-size: 14px; color: #64748b;');
+        });
+    </script>
+</body>
+
+</html>

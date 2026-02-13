@@ -808,3 +808,6 @@ export const restaurants = [
     }
 ];
 
+// 🌍 EXPOSITION GLOBALE (Maximum Reliability)
+window.restaurants = restaurants;
+

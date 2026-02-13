@@ -23,8 +23,12 @@
     <link rel="dns-prefetch" href="https://unpkg.com">
 
     <!-- Preload des ressources critiques -->
-    <link rel="preload" href="/style.css" as="style">
-    <link rel="preload" href="/features.css" as="style">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="gallery.css">
+    <link rel="stylesheet" href="chat.css">
+    <link rel="stylesheet" href="features.css">
+    <link rel="stylesheet" href="advanced-features.css">
     <link rel="preload" href="/app.js" as="script">
     <link rel="preload" href="/data.js" as="script">
 
@@ -32,13 +36,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="admin.css">
-    <link rel="stylesheet" href="gallery.css">
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/features.css">
-    <link rel="stylesheet" href="/chat.css">
-    <link rel="stylesheet" href="/responsive.css">
+
+    <!-- CSS is handled by Vite via app.js imports, keeping these for quick dev loading if needed but app.js imports them -->
 </head>
 
 <body>
@@ -328,17 +327,20 @@
                     <p id="paymentDepositText" style="font-size: 0.9rem; color: #666; margin: 10px 0;">Calcul de
                         l'acompte...</p>
                     <div class="payment-methods">
-                        <div class="pay-btn orange" onclick="processPayment('Orange Money')">
-                            <div class="payment-method-badge">
+                        <div class="pay-btn orange" onclick="processRealPayment('orange')">
+                            <!-- Logo Orange Money -->
+                            <div class="payment-method-badge" style="display: flex; align-items: center; gap: 10px;">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Orange_logo.svg/1200px-Orange_logo.svg.png"
-                                    class="pay-logo" alt="Orange Money">
+                                    class="pay-logo" alt="Orange Money" style="height: 30px;">
                                 <span>Orange Money</span>
                             </div>
                         </div>
-                        <div class="pay-btn wave" onclick="processPayment('Wave')">
-                            <div class="payment-method-badge">
-                                <img src="C:/Users/HP/.gemini/antigravity/brain/tempmediaStorage/media__1770813014164.png"
-                                    class="pay-logo" alt="Wave">
+                        <div class="pay-btn wave" onclick="processRealPayment('wave')">
+                            <!-- Logo Wave -->
+                            <div class="payment-method-badge" style="display: flex; align-items: center; gap: 10px;">
+                                <div
+                                    style="background: #1dc4ff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">
+                                    W</div>
                                 <span>Wave</span>
                             </div>
                         </div>
@@ -786,34 +788,16 @@
 
     <!-- Scripts critiques - chargés immédiatement -->
     <script type="module" src="/app.js"></script>
-    <script type="module" src="/data.js"></script>
-    <script type="module" src="/notifications.js"></script>
-    <script type="module" src="/chat.js"></script>
 
     <!-- Scripts non-critiques - chargés avec defer -->
-    <script type="module" defer src="/pwa.js"></script>
-    <script type="module" defer src="/backend-sync.js"></script>
-
-    <!-- Scripts de fonctionnalités - chargés à la demande -->
-    <script type="module">
-        // Lazy loading des fonctionnalités non critiques
-        window.addEventListener('load', () => {
-            // Charger après 2 secondes
-            setTimeout(() => {
-                import('/reviews.js');
-                import('/dashboard.js');
-            }, 2000);
-
-            // Charger après 4 secondes
-            setTimeout(() => {
-                import('/gamification.js');
-                import('/referral.js');
-                import('/advanced-search.js');
-                import('/transport.js');
-                import('/payment-wave.js');
-            }, 4000);
-        });
-    </script>
+    <script type="module" src="/pwa.js"></script>
+    <script type="module" src="/backend-sync.js"></script>
+    <script type="module" src="/transport.js"></script>
+    <script type="module" src="/gamification.js"></script>
+    <script type="module" src="/advanced-search.js"></script>
+    <script type="module" src="/payment-wave.js"></script>
+    <script type="module" src="/referral.js"></script>
+    <script type="module" src="/gallery-logic.js"></script>
 
     <!-- Injection du Chat Widget -->
     <script>
@@ -822,7 +806,9 @@
             .then(html => {
                 const div = document.createElement('div');
                 div.innerHTML = html;
-                document.body.appendChild(div.firstElementChild);
+                if (div.firstElementChild) {
+                    document.body.appendChild(div.firstElementChild);
+                }
             });
     </script>
     <!-- Bottom Navigation (Mobile Only) -->

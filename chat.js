@@ -15,6 +15,7 @@ function toggleChatWidget() {
     }
 }
 window.toggleChatWidget = toggleChatWidget;
+window.toggleChat = toggleChatWidget; // Compatibilité index.html
 
 function selectChatOption(option) {
     const chatBody = document.querySelector('.chat-body');
