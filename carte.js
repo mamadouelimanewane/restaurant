@@ -13,7 +13,7 @@ let currentFilter = 'all';
 
 // Initialize Map
 function initMap() {
-    map = L.map('map').setView([14.5, -15.0], 7);
+    map = L.map('map').setView([14.7167, -17.4677], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'

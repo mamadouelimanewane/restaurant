@@ -8,6 +8,7 @@
 
 const TERANGA_BOT_NAME = "Awa"; // Prénom local accueillant
 const API_DELAY = 600; // Simulation de réflexion
+let chatVisible = false; // State variable
 
 // Base de connaissances locale (Patterns de questions)
 const KNOWLEDGE_BASE = [
@@ -48,55 +49,50 @@ const KNOWLEDGE_BASE = [
         responses: ["Ah, les produits de notre mer ! 🐟 Le Lagon 1 est incontournable, mais La Cabane du Pêcheur est aussi excellente. Une préférence pour le cadre ?"]
     },
     {
-        patterns: ['dakar', 'saly', 'saint-louis', 'cap', 'ville'],
-        action: 'filter_city',
-        responses: ["Nous couvrons Dakar, Saly, Saint-Louis et Cap Skirring. Où vous trouvez-vous actuellement ?"]
+        patterns: ['info', 'heure', 'ouverture', 'contact'],
+        responses: ["Vous trouverez les horaires et contacts sur la fiche de chaque restaurant. Je peux aussi vous donner ces infos si vous me dites quel restaurant vous intéresse."]
     },
     {
-        patterns: ['merci', 'top', 'super', 'cool', 'génial'],
-        responses: ["C'est un plaisir ! N'hésitez pas si vous avez d'autres questions. 😊", "Je suis ravie de pouvoir aider ! Bon appétit d'avance ! 🍽️", "Avec plaisir ! Teranga, c'est l'hospitalité avant tout."]
-    },
-    {
-        patterns: ['transport', 'taxi', 'yango', 'voiture'],
-        action: 'show_transport_help',
-        responses: ["Besoin d'un transport ? Vous pouvez commander un Yango ou Heetch directement depuis la fiche du restaurant ! Pratique non ?"]
+        patterns: ['merci', 'top', 'super', 'cool'],
+        responses: ["Avec plaisir ! N'hésitez pas si vous avez d'autres questions. Bu leen fatte ! (N'oubliez pas !)", "C'est un plaisir de vous aider. Bon appétit !"]
     }
 ];
 
-// État de la conversation
+// Contexte de la conversation
 let conversationContext = {
     lastIntent: null,
     userPreferences: {}
 };
 
-// Initialisation du chat
+// Initialisation du Chatbot
 function initChatbot() {
-    console.log('🤖 Awa (Teranga Bot) initialisée.');
-
-    // Message d'accueil si vide
+    // Ajouter message d'accueil si vide
     const chatBody = document.querySelector('.chat-body');
-    if (chatBody && chatBody.children.length <= 1) { // Just options
+    if (chatBody && chatBody.children.length === 0) {
         setTimeout(() => {
-            addBotMessage("Salam ! 👋 Je suis Awa. Je peux vous aider à réserver, trouver un restaurant ou organiser un événement. Que puis-je faire pour vous ?");
+            addBotMessage("Salam ! 👋 Je suis Awa. Je peux vous aider à trouver un restaurant, réserver une table ou vous donner des idées de sortie. Dites-moi tout !");
+            showQuickActions();
         }, 1000);
     }
+
+    // Attacher toggle si le bouton existe déjà (sinon c'est global)
+    // Mais toggleChatWidget est global
 }
 
-// Fonction principale de traitement du message utilisateur
-async function handleUserMessage(message) {
+// Fonction principale de traitement du message
+function handleUserMessage(message) {
     const lowerMsg = message.toLowerCase();
-
-    // 1. Analyse de l'intention (Intent Recognition)
     let matchedIntent = null;
 
-    for (const entry of KNOWLEDGE_BASE) {
-        if (entry.patterns.some(pattern => lowerMsg.includes(pattern))) {
-            matchedIntent = entry;
+    // 1. Détection d'intention par mots-clés
+    for (const item of KNOWLEDGE_BASE) {
+        if (item.patterns.some(pattern => lowerMsg.includes(pattern))) {
+            matchedIntent = item;
             break;
         }
     }
 
-    // 2. Réponse contextuelle (si nom de restaurant détecté)
+    // 2. Détection de noms de restaurants (simple matching)
     const restaurantMatch = window.restaurants ? window.restaurants.find(r => lowerMsg.includes(r.name.toLowerCase())) : null;
     if (restaurantMatch) {
         return respondWithRestaurantDetails(restaurantMatch);
@@ -150,7 +146,7 @@ function respondWithRestaurantDetails(restaurant) {
     simulateTyping();
     setTimeout(() => {
         removeTypingIndicator();
-        addBotMessage(`Ah, **${restaurant.name}** ! Excellent choix à ${restaurant.district}.`);
+        addBotMessage(`Ah, **${restaurant.name}** ! Excellent choix à ${restaurant.city} (${restaurant.district}).`);
         addBotMessage(`C'est un établissement **${restaurant.cuisine}** avec une note de ${restaurant.rating}/5 ⭐.`);
 
         // Créer une mini-carte dans le chat
@@ -265,8 +261,38 @@ window.sendChatMessage = function () {
     handleUserMessage(message);
 };
 
+// --- CORE WIDGET FUNCTIONS ---
+
+// Toggle visibility
+window.toggleChatWidget = function () {
+    const chatWindow = document.getElementById('chatWindow');
+    if (!chatWindow) {
+        console.error("Chat window not found (yet?)");
+        return;
+    }
+
+    chatVisible = !chatVisible;
+    if (chatVisible) {
+        chatWindow.style.display = 'flex';
+        // Auto focus input on desktop, maybe not on mobile to prevent keyboard jump
+        if (window.innerWidth > 768) {
+            const input = document.getElementById('chatInput');
+            if (input) input.focus();
+        } else {
+            document.body.style.overflow = 'hidden'; // Lock scroll on mobile
+        }
+    } else {
+        chatWindow.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+};
+
+// Expose handleUserMessage globally for quick actions
+window.handleUserMessage = handleUserMessage;
+window.addUserMessage = addUserMessage;
+
 // Initialisation au chargement
 document.addEventListener('DOMContentLoaded', initChatbot);
 window.initChatbot = initChatbot;
 
-console.log('✅ Chat IA Teranga chargé (Version Améliorée)');
+console.log('✅ Chat IA Teranga chargé (Version Améliorée avec Widget)');
