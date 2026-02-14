@@ -141,31 +141,28 @@
     }
 
     /* --- SIDEBAR & FILTERS --- */
-    /* Hide filters sidebar initially or convert to full width */
+    /* Show sidebar but selectively hide elements */
     .filters-sidebar {
-        display: none;
-        /* Consider adding a "Show Filters" button */
-    }
-
-    /* Dedicated 'Show Filters' button for mobile UX */
-    .mobile-filter-trigger {
         display: block;
         width: 100%;
-        padding: 12px;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        text-align: center;
-        font-weight: 600;
-        color: #003580;
+        margin-bottom: 20px;
     }
+
+    /* Hide standard filters on mobile to reduce clutter, keep Concierge visible */
+    .filters-sidebar .filter-card,
+    .filters-sidebar>.filter-group {
+        display: none;
+    }
+
+    /* Optional: Add a button to show filters if needed, handled by JS 'openAdvancedFilters' */
 
     /* --- RESTAURANT GRID --- */
     .restaurant-list {
         grid-template-columns: 1fr;
         /* Single column */
         gap: 1.5rem;
+        padding-bottom: 80px;
+        /* Space for bottom nav */
     }
 
     .booking-card {
@@ -236,7 +233,7 @@
         font-size: 0.9rem;
     }
 
-    /* --- CHAT WIDGET --- */
+    /* --- CHAT WIDGET IMPROVEMENTS --- */
     .chat-window {
         width: 100%;
         height: 100%;
@@ -253,8 +250,16 @@
     }
 
     .chat-widget {
-        bottom: 15px;
-        right: 15px;
+        bottom: 25px;
+        /* Above bottom nav */
+        right: 20px;
+    }
+
+    /* Increase touch target */
+    .chat-bubble {
+        width: 65px;
+        height: 65px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
     /* --- CONCIERGE --- */
@@ -283,10 +288,12 @@
     .mobile-only {
         display: block !important;
     }
-}
 
-/* Fix for horizontal scroll on some mobile devices */
-body {
-    overflow-x: hidden;
-    width: 100%;
+    /* Fix for horizontal scroll on some mobile devices */
+    body {
+        overflow-x: hidden;
+        width: 100%;
+        padding-bottom: 70px;
+        /* Space for bottom nav */
+    }
 }
