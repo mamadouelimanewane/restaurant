@@ -54,10 +54,21 @@
         padding: 0.5rem 0;
         height: auto;
         flex-wrap: wrap;
+        align-items: center;
+        /* Vertically center items */
     }
 
     .logo {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
+        /* Smaller logo */
+    }
+
+    /* Ensure Map Link is Visible */
+    .mobile-map-link {
+        display: inline-flex !important;
+        align-items: center;
+        margin-left: auto;
+        margin-right: 10px;
     }
 
     /* Burger Menu Toggle */
@@ -69,6 +80,7 @@
         color: white;
         font-size: 1.5rem;
         cursor: pointer;
+        padding: 0;
     }
 
     /* Navigation Links (Hidden by default, shown when active) */
@@ -98,19 +110,23 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    /* --- HERO SECTION --- */
+    /* --- HERO SECTION (ULTRA COMPACT) --- */
     .hero-content {
-        padding: 2rem 0;
+        padding: 10px 0 20px 0 !important;
+        /* Minimal padding */
         text-align: center;
     }
 
     .hero-content h1 {
-        font-size: 2rem;
+        font-size: 1.3rem;
+        /* Smaller title */
         line-height: 1.2;
+        margin-bottom: 0px;
     }
 
     .hero-content p {
-        font-size: 1rem;
+        display: none;
+        /* Hide subtitle to save vertical space */
     }
 
     /* --- SEARCH BAR --- */
@@ -118,14 +134,16 @@
         flex-direction: column;
         padding: 0.5rem;
         background: var(--booking-yellow);
-        margin-top: -1rem;
-        /* Less overlap */
+        margin-top: 0;
+        /* No negative margin needed with small hero */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .search-input-group {
         border-right: none;
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        padding: 0.75rem;
+        padding: 0.5rem;
+        /* Smaller padding */
         width: 100%;
     }
 
@@ -136,8 +154,8 @@
     .search-btn {
         width: 100%;
         margin-top: 0.5rem;
-        padding: 1rem;
-        font-size: 1.1rem;
+        padding: 0.8rem;
+        font-size: 1rem;
     }
 
     /* --- SIDEBAR & FILTERS --- */
@@ -145,7 +163,8 @@
     .filters-sidebar {
         display: block;
         width: 100%;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
+        /* Reduced margin */
     }
 
     /* Hide standard filters on mobile to reduce clutter, keep Concierge visible */
@@ -154,28 +173,55 @@
         display: none;
     }
 
-    /* Optional: Add a button to show filters if needed, handled by JS 'openAdvancedFilters' */
+    /* Concierge Compact Styles */
+    .concierge-card {
+        margin-bottom: 0 !important;
+        padding: 1rem !important;
+        /* Smaller padding */
+    }
+
+    .concierge-header {
+        margin-bottom: 8px !important;
+    }
+
+    .concierge-info h3 {
+        font-size: 1rem !important;
+    }
+
+    .concierge-info p {
+        font-size: 0.8rem !important;
+    }
 
     /* --- RESTAURANT GRID --- */
     .restaurant-list {
         grid-template-columns: 1fr;
         /* Single column */
-        gap: 1.5rem;
+        gap: 1rem;
         padding-bottom: 80px;
         /* Space for bottom nav */
     }
 
+    .results-header {
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .results-header h2 {
+        font-size: 1.1rem !important;
+        /* Smaller header */
+    }
+
     .booking-card {
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem;
     }
 
     .booking-card-img-container {
-        height: 180px;
-        /* Taller image on mobile */
+        height: 160px;
+        /* Slightly smaller image on mobile */
     }
 
     .booking-card-content {
-        padding: 1rem;
+        padding: 0.8rem;
     }
 
     /* --- CARD DETAILS --- */
@@ -184,15 +230,15 @@
         /* Keep rating and button side-by-side or stacked? */
         align-items: center;
         justify-content: space-between;
-        margin-top: 1rem;
-        padding-top: 1rem;
+        margin-top: 0.8rem;
+        padding-top: 0.8rem;
         border-top: 1px solid #eee;
     }
 
     .see-availability {
         width: auto;
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
     }
 
     /* --- MODALS --- */
@@ -260,11 +306,6 @@
         width: 65px;
         height: 65px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    /* --- CONCIERGE --- */
-    .concierge-card {
-        margin-bottom: 2rem;
     }
 }
 
