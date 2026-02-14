@@ -348,13 +348,32 @@ function updateStats() {
     document.getElementById('totalCities').innerText = cities.length;
 }
 
-// City filter
+// City filter & Zoom Logic
+const CITY_COORDS = {
+    'all': { lat: 14.5, lng: -15.0, zoom: 7 },
+    'Dakar': { lat: 14.7167, lng: -17.4677, zoom: 13 },
+    'Saly': { lat: 14.4436, lng: -16.9914, zoom: 13 },
+    'Saint-Louis': { lat: 16.0326, lng: -16.4818, zoom: 13 },
+    'Cap Skirring': { lat: 12.3789, lng: -16.7327, zoom: 13 }
+};
+
 document.querySelectorAll('.city-chip').forEach(chip => {
     chip.addEventListener('click', () => {
         document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
-        currentFilter = chip.dataset.city;
+
+        const city = chip.getAttribute('data-city'); // More robust than dataset sometimes
+        currentFilter = city;
         renderAllRestaurants();
+
+        // Auto-zoom to region
+        const coords = CITY_COORDS[city] || CITY_COORDS['Dakar']; // Fallback to Dakar if unknown
+        if (map && coords) {
+            map.flyTo([coords.lat, coords.lng], coords.zoom, {
+                duration: 1.5,
+                easeLinearity: 0.25
+            });
+        }
     });
 });
 
