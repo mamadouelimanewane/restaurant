@@ -37,8 +37,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "restaurant-dummy-id" 
-      }
+        "projectId": "903c0728-b6b8-4bda-b267-f46cd1f93cfc"
+      },
+      "router": {}
     }
   }
 }
