@@ -1,0 +1,53 @@
+name: Build Android APK
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli
+
+      - name: Initialize KeyStore (Dummy for APK Preview)
+        run: |
+          keytool -genkeypair -v -keystore keystore.jks -alias teranga-key -keyalg RSA -keysize 2048 -validity 10000 -storepass "teranga123" -keypass "teranga123" -dname "CN=TerangaReserve, OU=IT, O=Teranga, L=Dakar, S=Dakar, C=SN"
+
+      - name: Build APK with Bubblewrap
+        run: |
+          # Use the twa-manifest.json we added
+          bubblewrap build --pk "teranga123" --skp "teranga123" --manifest twa-manifest.json
+
+      - name: Rename APK
+        run: mv app-release-signed.apk TerangaReserve.apk
+
+      - name: Upload APK as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TerangaReserve-Android-APK
+          path: TerangaReserve.apk
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' # Only on pushes to main
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "android-v${{ github.run_number }}"
+          name: "TerangaReserve Android Application v1.0.${{ github.run_number }}"
+          body: "🎉 Download the latest Android APK for TerangaReserve. Developed with ❤️ and Senegalese excellence."
+          draft: false
+          prerelease: false
+          files: TerangaReserve.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
