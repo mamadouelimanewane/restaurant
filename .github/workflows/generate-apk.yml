@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,17 +21,29 @@ jobs:
       - name: Install Bubblewrap CLI
         run: npm install -g @bubblewrap/cli
 
-      - name: Initialize KeyStore (Dummy for APK Preview)
+      - name: Setup Bubblewrap Settings
+        run: |
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/settings.json
+
+      - name: Initialize KeyStore
         run: |
           keytool -genkeypair -v -keystore keystore.jks -alias teranga-key -keyalg RSA -keysize 2048 -validity 10000 -storepass "teranga123" -keypass "teranga123" -dname "CN=TerangaReserve, OU=IT, O=Teranga, L=Dakar, S=Dakar, C=SN"
 
       - name: Build APK with Bubblewrap
         run: |
-          # Use the twa-manifest.json we added
-          bubblewrap build --pk "teranga123" --skp "teranga123" --manifest twa-manifest.json
+          # Use yes to bypass any interactive prompts
+          yes | bubblewrap build --pk "teranga123" --skp "teranga123" --manifest twa-manifest.json
 
-      - name: Rename APK
-        run: mv app-release-signed.apk TerangaReserve.apk
+      - name: Find and Rename APK
+        run: |
+          # The output file name is based on name in twa-manifest.json
+          # Using find to locate the .apk file safely
+          APK_FILE=$(find . -name "*.apk" | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+            echo "No APK found!" && exit 1
+          fi
+          mv "$APK_FILE" TerangaReserve.apk
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
@@ -40,12 +52,12 @@ jobs:
           path: TerangaReserve.apk
 
       - name: Create GitHub Release
-        if: github.event_name == 'push' # Only on pushes to main
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "android-v${{ github.run_number }}"
           name: "TerangaReserve Android Application v1.0.${{ github.run_number }}"
-          body: "🎉 Download the latest Android APK for TerangaReserve. Developed with ❤️ and Senegalese excellence."
+          body: "🎉 Download the latest Android APK for TerangaReserve. Built automatically with Senegalese quality."
           draft: false
           prerelease: false
           files: TerangaReserve.apk
