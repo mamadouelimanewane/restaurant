@@ -21,37 +21,33 @@ jobs:
       - name: Install Bubblewrap CLI
         run: npm install -g @bubblewrap/cli
 
-      - name: Setup Bubblewrap Settings
+      - name: Create Bubblewrap Settings
         run: |
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/settings.json
 
-      - name: Initialize KeyStore
+      - name: Initialize KeyStore (PKCS12 for modern JRE)
         run: |
-          # Use absolute path for keystore relative to runner workspace
-          keytool -genkeypair -v -keystore $GITHUB_WORKSPACE/keystore.jks \
-            -alias teranga-key -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass "teranga123" -keypass "teranga123" \
-            -dname "CN=TerangaReserve, OU=IT, O=Teranga, L=Dakar, S=Dakar, C=SN"
+          keytool -genkeypair -v -keystore keystore.jks -alias teranga-key -keyalg RSA -keysize 2048 -validity 10000 -storetype PKCS12 -storepass "teranga123" -keypass "teranga123" -dname "CN=TerangaReserve, OU=App, O=Teranga, L=Dakar, S=Dakar, C=SN"
 
-      - name: Build APK with Bubblewrap
+      - name: Build APK with Bubblewrap (Debug + Log)
         run: |
-          # Fixing flags: --kp (keystore password), --skp (signing key password)
-          # We also use --skip_pwa_check because Vercel might be slow to propagate icons
-          # Note: Bubblewrap v1.18+ uses --skipPwaCheck 
-          yes | bubblewrap build --manifest twa-manifest.json \
-            --kp "teranga123" --skp "teranga123" --skipPwaCheck
+          # We use --skipPwaCheck to be safe
+          # and we print output to see what happens
+          yes | bubblewrap build --manifest twa-manifest.json --kp "teranga123" --skp "teranga123" --skipPwaCheck || true
+          
+          # Debug: List all files to see if something was generated
+          ls -R
 
-      - name: Search for APK
-        id: find_apk
+      - name: Locate APK
+        id: locate
         run: |
-          # Look for any apk file in the current directory or child directories
           APK_PATH=$(find . -name "*.apk" | head -n 1)
           if [ -z "$APK_PATH" ]; then
-            echo "::error::No APK file found after build!" && exit 1
+            echo "::error::No APK found after compilation." && exit 1
           fi
-          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
-          cp "$APK_PATH" TerangaReserve.apk
+          echo "apk_found=$APK_PATH" >> $GITHUB_OUTPUT
+          mv "$APK_PATH" TerangaReserve.apk
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
@@ -65,7 +61,7 @@ jobs:
         with:
           tag_name: "android-v${{ github.run_number }}"
           name: "TerangaReserve Android Application v1.0.${{ github.run_number }}"
-          body: "🎉 Download the latest Android APK for TerangaReserve. Built automatically with Senegalese quality."
+          body: "🎉 Téléchargez l'application officielle TerangaReserve (APK). Une expérience fluide et gourmande pour votre mobile."
           draft: false
           prerelease: false
           files: TerangaReserve.apk
