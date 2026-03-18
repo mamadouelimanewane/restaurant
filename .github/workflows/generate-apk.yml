@@ -28,22 +28,30 @@ jobs:
 
       - name: Initialize KeyStore
         run: |
-          keytool -genkeypair -v -keystore keystore.jks -alias teranga-key -keyalg RSA -keysize 2048 -validity 10000 -storepass "teranga123" -keypass "teranga123" -dname "CN=TerangaReserve, OU=IT, O=Teranga, L=Dakar, S=Dakar, C=SN"
+          # Use absolute path for keystore relative to runner workspace
+          keytool -genkeypair -v -keystore $GITHUB_WORKSPACE/keystore.jks \
+            -alias teranga-key -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass "teranga123" -keypass "teranga123" \
+            -dname "CN=TerangaReserve, OU=IT, O=Teranga, L=Dakar, S=Dakar, C=SN"
 
       - name: Build APK with Bubblewrap
         run: |
-          # Use yes to bypass any interactive prompts
-          yes | bubblewrap build --pk "teranga123" --skp "teranga123" --manifest twa-manifest.json
+          # Fixing flags: --kp (keystore password), --skp (signing key password)
+          # We also use --skip_pwa_check because Vercel might be slow to propagate icons
+          # Note: Bubblewrap v1.18+ uses --skipPwaCheck 
+          yes | bubblewrap build --manifest twa-manifest.json \
+            --kp "teranga123" --skp "teranga123" --skipPwaCheck
 
-      - name: Find and Rename APK
+      - name: Search for APK
+        id: find_apk
         run: |
-          # The output file name is based on name in twa-manifest.json
-          # Using find to locate the .apk file safely
-          APK_FILE=$(find . -name "*.apk" | head -n 1)
-          if [ -z "$APK_FILE" ]; then
-            echo "No APK found!" && exit 1
+          # Look for any apk file in the current directory or child directories
+          APK_PATH=$(find . -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "::error::No APK file found after build!" && exit 1
           fi
-          mv "$APK_FILE" TerangaReserve.apk
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          cp "$APK_PATH" TerangaReserve.apk
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
